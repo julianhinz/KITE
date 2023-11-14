@@ -1,0 +1,28 @@
+Package: KITE
+Title: Kiel Institute Trade Policy Evaluation Model
+Version: 23.11
+Authors@R: c(
+    person(given = "Julian",
+           family = "Hinz",
+           role = c("cre","aut"),
+           email = "julian.hinz@ifw-kiel.de"),
+    person(given = "Hendrik",
+           family = "Mahlkow",
+           role = c("aut"),
+           email = "hendrik.mahlkow@ifw-kiel.de")
+           )
+Description: This package implements the Kiel Institute's general equilibrium gravity model.
+License: file LICENSE
+Depends:
+    R (>= 2.15.0)
+Imports:
+    stringr,
+    reshape2,
+    data.table,
+    abind,
+    cli
+Suggests: knitr
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+VignetteBuilder: knitr
