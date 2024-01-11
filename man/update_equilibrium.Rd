@@ -5,62 +5,23 @@
 \title{Update equilibrium}
 \usage{
 update_equilibrium(
+  model = NULL,
   initial_conditions = NULL,
-  tariff = NULL,
-  tariff_new = NULL,
-  ntb = NULL,
-  ntb_new = NULL,
-  ntb_change = NULL,
-  consumption_share = NULL,
-  factor_share = NULL,
-  intermediate_share = NULL,
-  trade_elasticity = NULL,
-  trade_share = NULL,
-  value_added = NULL,
-  trade_balance = NULL,
-  max_iterations = 1000,
-  tolerance = 1e-04,
-  vfactor = 0.1,
-  verbose = T
+  model_scenario = NULL,
+  settings = NULL
 )
 }
 \arguments{
-\item{initial_conditions}{Required list of prepared initial conditions, e.g. for GTAP 10.}
+\item{model}{Model specification to run, e.g. caliendo_parro_2015()}
 
-\item{tariff}{Optional data.table of alternative initial tariffs (\eqn{\tau}), dimensions: origin x destination x sector.}
+\item{initial_conditions}{List of initial conditions, e.g. for GTAP 10.}
 
-\item{tariff_new}{Optional data.table of new tariffs (\eqn{\tau'}), dimensions: origin x destination x sector.}
+\item{model_scenario}{List of counterfactual conditions}
 
-\item{ntb}{Optional data.table of alternative initial non-tariff barriers (\eqn{\kappa}), dimensions: origin x destination x sector.}
-
-\item{ntb_new}{Optional data.table of new non-tariff barriers (\eqn{\kappa'}), dimensions: origin x destination x sector.}
-
-\item{ntb_change}{Optional data.table of relative change to new non-tariff barriers (\eqn{\kappa' / \kappa}), dimensions: origin x destination x sector.}
-
-\item{consumption_share}{Optional data.table of alternative elasticities of substitution or consumption shares (\eqn{\alpha}), dimensions: destination x sector.}
-
-\item{factor_share}{Optional data.table of alternative input factor shares (\eqn{\beta}), dimensions: country x sector.}
-
-\item{intermediate_share}{Optional data.table of alternative input-output coefficients (\eqn{\gamma}), dimensions: country x input_sector x output_sector.}
-
-\item{trade_elasticity}{Optional data.table of alternative trade elasticities (\eqn{\theta}), dimensions: sector.}
-
-\item{trade_share}{Optional data.table of alternative initial trade matrix (\eqn{\pi}), dimensions: origin x destination x sector.}
-
-\item{value_added}{Optional data.table of alternative value added (\eqn{w * L}), dimensions: country.}
-
-\item{trade_balance}{Optional data.table of alternative trade balances (\eqn{D}), dimensions: country.}
-
-\item{max_iterations}{maximum number of iterations.}
-
-\item{tolerance}{Tolerance value for iterations.}
-
-\item{vfactor}{Regulates the "speed" of the adjustment of wages.}
-
-\item{verbose}{How talkative should the function be?}
+\item{settings}{List of settings}
 }
 \value{
-List of list of data.tables with initial_conditions, model_scenarios and equilibrium_new.
+List of list of data.tables with model, initial_conditions, model_scenario and output
 }
 \description{
 `update_equilibrium()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.

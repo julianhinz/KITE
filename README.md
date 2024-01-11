@@ -1,15 +1,21 @@
 # KITE — Kiel Institute Trade Policy Evaluation <img src="man/figures/logo_kite.png" align="right" width="200" height="240"/>
 ***
 
-The KITE model provides a tool for simulating and estimating various types of (trade) policy changes. The underlying model uses a computable general equilibrium (CGE) framework of the type that is commonly described as **"New Quantitative Trade Model"**. The model has originally been developed by [Caliendo & Parro (2015)](#1). They built a multi-sector version of the Ricardian trade model of [Eaton & Kortum (2002)](#2), where countries produce and sell domestically as well as internationally according to their relative copmparative advantage. The model extends this framework by allowing for extensive intra- and international input-output linkages where goods and services may enter as both final and intermediate goods. Trade policy is conducted through the tightening or easing of trade barriers in form of tariffs and non-tariff measures.
+The KITE model provides a tool for simulating and estimating various types of (trade) policy changes. The underlying model uses a computable general equilibrium (CGE) framework of the type that is commonly described as **"New Quantitative Trade Model"**. The model has originally been developed by [Caliendo & Parro (2015)](#1). They built a multi-sector version of the Ricardian trade model of [Eaton & Kortum (2002)](#2), where countries produce and sell domestically as well as internationally according to their relative comparative advantage. The model extends this framework by allowing for extensive intra- and international input-output linkages where goods and services may enter as both final and intermediate goods. Trade policy is conducted through the tightening or easing of trade barriers in form of tariffs and non-tariff measures.
 
 By now the model has been extensively used to evaluate (free) trade agreements (e.g. NAFTA, TTIP) and trade disputes (i.e. US-China trade war, Airbus-Boeing case) and economic sanction regimes. It derives the economic consequences for production, value added and welfare based on pre-defined scenarios that specify the policies to be evaluated. It allows various types of data sources that can be used in constructing the underlying model variables and/or parameters.
 
 The model is constantly updated to improve efficiency and/or extend the underlying framework. Current projects include the implementation of CO2 footage in production or the introduction of the factor land in the production function.
 
+## Updates
+
+Version 24.01 allows the user to run different models within the same quantitative framework. Included models are:
+- Caliendo, Lorenzo, and Fernando Parro. 2015. “Estimates of the Trade and Welfare Effects of NAFTA.” The Review of Economic Studies 82 (1): 1–44.
+- Sonali Chowdhry, Julian Hinz, Katrin Kamin and Joschka Wanner. 2024. "Brothers in arms: The value of coalitions in sanctions regimes." Economic Policy, forthcoming.
+
 ## Copyright
 
-Copyright 2019-2023 Kiel Institute & Austrian Institute of Economic Research, KITE Development Team
+Copyright 2019-2024 Kiel Institute for the World Economy & Austrian Institute of Economic Research, KITE Development Team
 
 ## Developers
 
@@ -24,7 +30,7 @@ Copyright 2019-2023 Kiel Institute & Austrian Institute of Economic Research, KI
 KITE is a [R](#3) package. To install this package, download the current beta version and install using
 
 ```{R}
-install.packages("~/path/to/KITE_23.11.tar.gz", repos = NULL, type = "source")
+install.packages("~/path/to/KITE_24.01.tar.gz", repos = NULL, type = "source")
 ```
 
 ## Tutorial
@@ -80,15 +86,19 @@ The user may specify other policies that are supposed to enter the counterfactua
 
 The function calculates a new equilibrium based on the policy changes the user feeds into the model. The corresponding results are expressed in exact hat algebra, i.e., in discrete changes relating the base-line equilibrium and the counterfactual equilibrium (scenario). 
 
-The function rests on three building blocks, two of which need to be specified.
+The function rests on four building blocks, all of which need to be specified.
 
-1. `initial conditions = initial_conditions`
+1. `model = my_new_model`
 
-Nothing to specify here
+Here the user needs to specify the model used, e.g., `model = caliendo_parro_2015`. The model is specified in a respective `model_*.R` file. The user may also want to specify a new model, in which case the user needs to specify the model in a `model_my_new_model.R` script and then source it manually.
 
-2. `tariff_new = tariff_war`, etc.
+2. `initial conditions = initial_conditions`
 
-Here, the user needs to specify all the variables that represent the desired counterfactual/scenario situation. Please note that these variables need to be defined in "Step 2: Set Model Scenarios", above. Options to specify the counterfactual situation include tariffs (`tariff_new`) and non-tariff barriers (`ntb_change`). The user may even want to recalculate the baseline equilibrium to change the situation a given counterfactual/scenario is supposed to be compared to. Options include tariffs, non tariff barriers, consumption share, factor share, intermediate share, trade elasticity, trade share, value added, trade balance.
+Specify the initial conditions.
+
+1. `model_scenario = list(tariff_new = tariff_war,...)`
+
+Here, the user needs to specify all the variables that represent the desired counterfactual/scenario situation. Please note that these variables need to be defined in "Step 2: Set Model Scenarios", above. Options to specify the counterfactual situation include tariffs (`tariff_new`) and non-tariff barriers (`ntb_change`). The user may even want to recalculate the baseline equilibrium to change the situation a given counterfactual/scenario is supposed to be compared to. Options include tariffs, non-tariff barriers, consumption share, factor share, intermediate share, trade elasticity, trade share, value-added, trade balance.
 
 3. `verbose = 2` and `tolerance = 1e-4`
 
@@ -97,10 +107,25 @@ Set verbosity levels between 0 and 2 to get more or less detailed output while t
 The full command should look something like this
 
 ```{R}
-results = update_equilibrium(initial_conditions = initial_conditions,
-                             tariff_new = tariff_war,
-                             verbose = 2,
-                             tolerance = 1e-4)
+results = update_equilibrium(model = chowdhry_hinz_kamin_wanner_2022,
+                             initial_conditions = initial_conditions,
+                             model_scenario = list(tariff_new = tariff_war,
+                                                   coalition_member = c("usa", "can", "mex")),
+                             settings = list(verbose = 2L,
+                                             tolerance = 1e-4))
+```
+
+# Citation
+
+Please cite the package as follows:
+
+```{bibtex}
+@Manual{,
+    title = {KITE: Kiel Institute Trade Policy Evaluation Model},
+    author = {Julian Hinz and Hendrik Mahlkow and Joschka Wanner},
+    year = {2024},
+    note = {R package version 24.01},
+  }
 ```
 
 ## References

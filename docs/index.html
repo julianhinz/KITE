@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">KITE</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">20.09</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">24.01</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -59,120 +55,169 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="kite--kiel-institute-trade-policy-evaluation-" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#kite--kiel-institute-trade-policy-evaluation-" class="anchor"></a>KITE — Kiel Institute Trade Policy Evaluation <img src="reference/figures/logo_kite.png" align="right" width="147" height="170">
+
+<div class="section level1">
+<div class="page-header"><h1 id="kite--kiel-institute-trade-policy-evaluation-">KITE — Kiel Institute Trade Policy Evaluation <img src="reference/figures/logo_kite.png" align="right" width="200" height="240"><a class="anchor" aria-label="anchor" href="#kite--kiel-institute-trade-policy-evaluation-"></a>
 </h1></div>
-<p>Compute counterfactual scenarios for trade policy.</p>
-<div id="installing-kite" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installing-kite" class="anchor"></a>Installing KITE</h2>
-<p>To install this package, download the current beta version and install using</p>
-<pre class="{r}"><code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("~/path/to/KITE_20.09.tar.gz", repos = NULL, type = "source")</a></code></pre>
-<p>or the current release version</p>
-<pre class="{r}"><code><a href="https://rdrr.io/r/utils/install.packages.html">install.packages("KITE", repos = "http://repo.julianhinz.org/cran")</a></code></pre>
+<hr>
+<p>The KITE model provides a tool for simulating and estimating various types of (trade) policy changes. The underlying model uses a computable general equilibrium (CGE) framework of the type that is commonly described as <strong>“New Quantitative Trade Model”</strong>. The model has originally been developed by <a href="#id_1">Caliendo &amp; Parro (2015)</a>. They built a multi-sector version of the Ricardian trade model of <a href="#id_2">Eaton &amp; Kortum (2002)</a>, where countries produce and sell domestically as well as internationally according to their relative comparative advantage. The model extends this framework by allowing for extensive intra- and international input-output linkages where goods and services may enter as both final and intermediate goods. Trade policy is conducted through the tightening or easing of trade barriers in form of tariffs and non-tariff measures.</p>
+<p>By now the model has been extensively used to evaluate (free) trade agreements (e.g. NAFTA, TTIP) and trade disputes (i.e. US-China trade war, Airbus-Boeing case) and economic sanction regimes. It derives the economic consequences for production, value added and welfare based on pre-defined scenarios that specify the policies to be evaluated. It allows various types of data sources that can be used in constructing the underlying model variables and/or parameters.</p>
+<p>The model is constantly updated to improve efficiency and/or extend the underlying framework. Current projects include the implementation of CO2 footage in production or the introduction of the factor land in the production function.</p>
+<div class="section level2">
+<h2 id="copyright">Copyright<a class="anchor" aria-label="anchor" href="#copyright"></a>
+</h2>
+<p>Copyright 2019-2024 Kiel Institute for the World Economy &amp; Austrian Institute of Economic Research, KITE Development Team</p>
 </div>
-<div id="usage" class="section level2">
-<h2 class="hasAnchor">
-<a href="#usage" class="anchor"></a>Usage</h2>
-<div id="update-equilibrium" class="section level3">
-<h3 class="hasAnchor">
-<a href="#update-equilibrium" class="anchor"></a>Update equilibrium</h3>
-<p><code><a href="reference/update_equilibrium.html">update_equilibrium()</a></code> lets you update the equilibrium given the new tariffs.</p>
-</div>
-</div>
-<div id="development-roadmap" class="section level2">
-<h2 class="hasAnchor">
-<a href="#development-roadmap" class="anchor"></a>Development roadmap</h2>
-<div id="immediately" class="section level3">
-<h3 class="hasAnchor">
-<a href="#immediately" class="anchor"></a>Immediately</h3>
-<ul class="task-list">
-<li>
-<input type="checkbox" disabled>
-Clean-up and document initial conditions pre-processing script (GTAP 10).</li>
-<li>
-<input type="checkbox" disabled>
-Update current tariff scheme (baseline/ benchmark)</li>
-<li>
-<input type="checkbox" disabled>
-Post-processing: automated pdf-export of the most relevant results after each run.</li>
-<li>
-<input type="checkbox" disabled checked>
-Export-tax integration</li>
-<li>
-<input type="checkbox" disabled checked>
-include non tariff barriers</li>
+<div class="section level2">
+<h2 id="developers">Developers<a class="anchor" aria-label="anchor" href="#developers"></a>
+</h2>
+<ul>
+<li><p>Julian Hinz, Kiel Institute, Mail: <a href="mailto:julian.hinz@ifw-kiel.de">julian.hinz@ifw-kiel.de</a></p></li>
+<li><p>Hendrik Mahlkow, Austrian Institute of Economic Research, Mail: <a href="mailto:hendrik.mahlkow@wifo.ac.at">hendrik.mahlkow@wifo.ac.at</a></p></li>
+<li><p>Joschka Wanner, Kiel Institute, Mail: <a href="mailto:joschka.wanner@ifw-kiel.de">hendrik.mahlkow@ifw-kiel.de</a></p></li>
 </ul>
 </div>
-<div id="medium-term-till-december" class="section level3">
-<h3 class="hasAnchor">
-<a href="#medium-term-till-december" class="anchor"></a>Medium-term (till December)</h3>
-<ul class="task-list">
-<li>
-<input type="checkbox" disabled>
-Regional dis-aggregation of the model results via regional value-added shares.</li>
-<li>
-<input type="checkbox" disabled>
-Function to generate tariff / trade war scenarios (from HS6 to GTAP sectors)</li>
-</ul>
+<div class="section level2">
+<h2 id="installing-kite">Installing KITE<a class="anchor" aria-label="anchor" href="#installing-kite"></a>
+</h2>
+<p>KITE is a <a href="#id_3">R</a> package. To install this package, download the current beta version and install using</p>
+<p><code>{R} install.packages("~/path/to/KITE_24.01.tar.gz", repos = NULL, type = "source")</code></p>
 </div>
-<div id="long-term-as-from-january-2021" class="section level3">
-<h3 class="hasAnchor">
-<a href="#long-term-as-from-january-2021" class="anchor"></a>Long-term (as from January 2021)</h3>
-<ul class="task-list">
-<li>
-<input type="checkbox" disabled>
-Extension: land as a production factor</li>
-<li>
-<input type="checkbox" disabled>
-Extension: different labor categories</li>
-<li>
-<input type="checkbox" disabled>
-Exentsion: constraints on labor mobility (long vs. short run effects)</li>
-<li>
-<input type="checkbox" disabled>
-Extension: CO2 price as input cost (Joschka?) and / or on shipping costs (Anna / Vincent?)</li>
-<li>
-<input type="checkbox" disabled>
-WIOD/EORA initial conditions</li>
-<li>
-<input type="checkbox" disabled>
-Regional dis-aggregation integrated into the model via regional I/O-tables.</li>
-</ul>
+<div class="section level2">
+<h2 id="tutorial">Tutorial<a class="anchor" aria-label="anchor" href="#tutorial"></a>
+</h2>
+<p>The package comes with a vignette describing different trade policy scenarios. You can load it with the following command (the package needs to be installed):</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"KITE"</span><span class="op">)</span> <span class="co"># Trade policy scenarios with KITE</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h2>
+<p>Running the model requires the user to follow 4 basic steps:</p>
+<ol style="list-style-type: decimal">
+<li>Choose an input-output table.</li>
+<li>Define scenarios that are supposed to be simulated by the model.</li>
+<li>Feed the data from 1) and 2) into the model and run.</li>
+<li>Process the results.</li>
+</ol>
+<p>The script <code>example.R</code> provides a step-by-step algorithm in performing a scenario analysis with KITE. It sources from different scripts and functions that are embedded in the KITE package and will be explained further below. Please use the script for all your calculations.</p>
+<div class="section level3">
+<h3 id="step-1-choose-input-output-table">Step 1: Choose Input-Output Table<a class="anchor" aria-label="anchor" href="#step-1-choose-input-output-table"></a>
+</h3>
+<p>Load the I-O tables from a folder <code>"input/../initial_conditions.rds"</code></p>
+<p><code>{R} initial_conditions = read_rds("input/../initial_conditions.rds")</code></p>
+</div>
+<div class="section level3">
+<h3 id="step-2-set-model-scenarios">Step 2: Set Model Scenarios<a class="anchor" aria-label="anchor" href="#step-2-set-model-scenarios"></a>
+</h3>
+<p>Define and set the scenarios for the model run by specifying the origin and destination countries concerned, as well as the counterfactual policy that is supposed to represent the given policy scenario.</p>
+<p><strong>Counterfactual Tariff</strong> ```{R} tariff_war = copy(initial_conditions$tariff)</p>
 </div>
 </div>
 </div>
+<div class="section level1">
+<h1 id="us-tariffs-on-chinese-goods-and-services">US tariffs on Chinese goods and services<a class="anchor" aria-label="anchor" href="#us-tariffs-on-chinese-goods-and-services"></a>
+</h1>
+<p>tariff_war[origin == “usa” &amp; destination == “chn”, value := 1.2]</p>
+</div>
+<div class="section level1">
+<h1 id="chinese-tariffs-on-us-goods-and-services">Chinese tariffs on US goods and services<a class="anchor" aria-label="anchor" href="#chinese-tariffs-on-us-goods-and-services"></a>
+</h1>
+<p>tariff_war[destination == “usa” &amp; origin == “chn”, value := 1.2]</p>
+<pre><code>
+In this example KITE simulates the *US-China trade war*, assuming that both countries simultaneously set up a tariff of 20% across all sectors. "value" specifies the tariff as value = 1 + tariff/100.
+
+The user may specify other policies that are supposed to enter the counterfactual situation, such as non tariff barriers or export subsidies. The procedure works exactly the same as in the case of a tariff change. For more detailed information on the options for policy changes please proceed to Step 3. For more examples see `vignette("KITE")`. 
+
+
+### Step 3: Run the Model
+
+The function calculates a new equilibrium based on the policy changes the user feeds into the model. The corresponding results are expressed in exact hat algebra, i.e., in discrete changes relating the base-line equilibrium and the counterfactual equilibrium (scenario). 
+
+The function rests on four building blocks, all of which need to be specified.
+
+1. `model = my_new_model`
+
+Here the user needs to specify the model used, e.g., `model = caliendo_parro_2015`. The model is specified in a respective `model_*.R` file. The user may also want to specify a new model, in which case the user needs to specify the model in a `model_my_new_model.R` script and then source it manually.
+
+2. `initial conditions = initial_conditions`
+
+Specify the initial conditions.
+
+1. `model_scenario = list(tariff_new = tariff_war,...)`
+
+Here, the user needs to specify all the variables that represent the desired counterfactual/scenario situation. Please note that these variables need to be defined in "Step 2: Set Model Scenarios", above. Options to specify the counterfactual situation include tariffs (`tariff_new`) and non-tariff barriers (`ntb_change`). The user may even want to recalculate the baseline equilibrium to change the situation a given counterfactual/scenario is supposed to be compared to. Options include tariffs, non-tariff barriers, consumption share, factor share, intermediate share, trade elasticity, trade share, value-added, trade balance.
+
+3. `verbose = 2` and `tolerance = 1e-4`
+
+Set verbosity levels between 0 and 2 to get more or less detailed output while the model converges. The tolerance level determines the stopping point, 1e-6 being the default and lower numbers leading to more precise results.
+
+The full command should look something like this
+
+```{R}
+results = update_equilibrium(model = chowdhry_hinz_kamin_wanner_2022,
+                             initial_conditions = initial_conditions,
+                             model_scenario = list(tariff_new = tariff_war,
+                                                   coalition_member = c("usa", "can", "mex")),
+                             settings = list(verbose = 2L,
+                                             tolerance = 1e-4))</code></pre>
+</div>
+<div class="section level1">
+<h1 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h1>
+<p>Please cite the package as follows:</p>
+<p><code>{bibtex} @Manual{,     title = {KITE: Kiel Institute Trade Policy Evaluation Model},     author = {Julian Hinz and Hendrik Mahlkow and Joschka Wanner},     year = {2024},     note = {R package version 24.01},   }</code></p>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p><i id="#1">Caliendo, Lorenzo, and Fernando Parro.</i> 2015. “Estimates of the Trade and Welfare Effects of NAFTA.” The Review of Economic Studies 82 (1): 1–44.</p>
+<p><i id="#2">Eaton, Jonathan, and Samuel Kortum. 2002.</i> “Technology, Geography, and Trade.” Econometrica 70 (5): 1741–79.</p>
+<p><i id="#3">R Core Team. 2020.</i> “R: A language and environment for statistical computing.” R Foundation for Statistical Computing, Vienna, Austria. <a href="https://www.R-project.org/" class="external-link uri">https://www.R-project.org/</a></p>
+</div>
+</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>file <a href="LICENSE-text.html">LICENSE</a>
 </li>
 </ul>
 </div>
+
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html#citation">Citing KITE</a></li>
+</ul>
+</div>
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Julian Hinz <br><small class="roles"> Maintainer, author </small>  </li>
 <li>Hendrik Mahlkow <br><small class="roles"> Author </small>  </li>
-<li>Anna Jacobs <br><small class="roles"> Author </small>  </li>
-<li><a href="authors.html">All authors...</a></li>
+<li>Joschka Wanner <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
+
+
 
   </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Julian Hinz, Hendrik Mahlkow, Anna Jacobs.</p>
+  <p></p>
+<p>Developed by Julian Hinz, Hendrik Mahlkow, Joschka Wanner.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -180,6 +225,8 @@ Regional dis-aggregation integrated into the model via regional I/O-tables.</li>
 
   
 
+
+  
 
   </body>
 </html>
