@@ -23,7 +23,7 @@ Copyright 2019-2024 Kiel Institute for the World Economy & Austrian Institute of
   
 * Hendrik Mahlkow, Austrian Institute of Economic Research, Mail: [hendrik.mahlkow@wifo.ac.at](mailto:hendrik.mahlkow@wifo.ac.at)
   
-* Joschka Wanner, Kiel Institute, Mail: [hendrik.mahlkow@ifw-kiel.de](mailto:joschka.wanner@ifw-kiel.de)
+* Joschka Wanner, Kiel Institute, Mail: [joschka.wanner@ifw-kiel.de](mailto:joschka.wanner@ifw-kiel.de)
 
 ## Installing KITE
 
