@@ -61,6 +61,8 @@ Load the I-O tables from a folder `"input/../initial_conditions.rds"`
 initial_conditions = read_rds("input/../initial_conditions.rds")
 ```
 
+**NOTE:** Email us at tradepolicy@ifw-kiel.de for access to example initial conditions.
+
 ### Step 2: Set Model Scenarios
 
 Define and set the scenarios for the model run by specifying the origin and destination countries concerned, as well as the counterfactual policy that is supposed to represent the given policy scenario. 
