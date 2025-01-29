@@ -53,15 +53,15 @@ Running the model requires the user to follow 4 basic steps:
 
 The script `example.R` provides a step-by-step algorithm in performing a scenario analysis with KITE. It sources from different scripts and functions that are embedded in the KITE package and will be explained further below. Please use the script for all your calculations.
 
-### Step 1: Choose Input-Output Table
+### Step 1: Choose Initial Conditions (input-output tables, trade shares, etc.)
 
-Load the I-O tables from a folder `"input/../initial_conditions.rds"`
+Load the initial conditions from a folder `"input/../initial_conditions.rds"`
 
 ```{R}
 initial_conditions = read_rds("input/../initial_conditions.rds")
 ```
 
-**NOTE:** Email us at tradepolicy@ifw-kiel.de for access to example initial conditions.
+**NOTE:** Email us at [tradepolicy@ifw-kiel.de](mailto:tradepolicy@ifw-kiel.de) for access to example initial conditions.
 
 ### Step 2: Set Model Scenarios
 
