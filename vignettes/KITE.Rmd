@@ -1,0 +1,61 @@
+---
+title: "KITE"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{KITE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+The **KITE** package implements the Kiel Institute's general equilibrium gravity
+model for the quantitative evaluation of trade policies.  The model can be used
+to analyse counterfactual scenarios such as changes in tariffs or non‑tariff
+barriers.
+
+# Example workflow
+
+Below we outline the basic steps for running a policy experiment.  A more
+detailed script can be found in `tests/example.R`.
+
+## 1. Load initial conditions
+
+```r
+initial_conditions <- readr::read_rds("input/../initial_conditions.rds")
+```
+
+## 2. Define the policy scenario
+
+```r
+library(data.table)
+
+# Example: a symmetric tariff war between the USA and China
+tariff_war <- copy(initial_conditions$tariff)
+
+# US tariffs on Chinese goods and services
+tariff_war[origin == "usa" & destination == "chn", value := 1.2]
+
+# Chinese tariffs on US goods and services
+tariff_war[destination == "usa" & origin == "chn", value := 1.2]
+```
+
+## 3. Run the model
+
+```r
+results <- update_equilibrium(
+  model = chowdhry_hinz_kamin_wanner_2022,
+  initial_conditions = initial_conditions,
+  model_scenario = list(tariff_new = tariff_war,
+                        coalition_member = c("usa", "can", "mex")),
+  settings = list(verbose = 2L, tolerance = 1e-4)
+)
+```
+
+## 4. Process results
+
+```r
+results <- process_results(results)
+```
+
+For additional options see the README or the package documentation.

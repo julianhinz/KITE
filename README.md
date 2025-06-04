@@ -92,17 +92,17 @@ The function rests on four building blocks, all of which need to be specified.
 
 1. `model = my_new_model`
 
-Here the user needs to specify the model used, e.g., `model = caliendo_parro_2015`. The model is specified in a respective `model_*.R` file. The user may also want to specify a new model, in which case the user needs to specify the model in a `model_my_new_model.R` script and then source it manually.
+   Here the user needs to specify the model used, e.g., `model = caliendo_parro_2015`. The model is specified in a respective `model_*.R` file. The user may also want to specify a new model, in which case the user needs to specify the model in a `model_my_new_model.R` script and then source it manually.
 
-2. `initial conditions = initial_conditions`
+2. `initial_conditions = initial_conditions`
 
-Specify the initial conditions.
+   Specify the initial conditions.
 
-1. `model_scenario = list(tariff_new = tariff_war,...)`
+3. `model_scenario = list(tariff_new = tariff_war,...)`
 
 Here, the user needs to specify all the variables that represent the desired counterfactual/scenario situation. Please note that these variables need to be defined in "Step 2: Set Model Scenarios", above. Options to specify the counterfactual situation include tariffs (`tariff_new`) and non-tariff barriers (`ntb_change`). The user may even want to recalculate the baseline equilibrium to change the situation a given counterfactual/scenario is supposed to be compared to. Options include tariffs, non-tariff barriers, consumption share, factor share, intermediate share, trade elasticity, trade share, value-added, trade balance.
 
-3. `verbose = 2` and `tolerance = 1e-4`
+4. `verbose = 2` and `tolerance = 1e-4`
 
 Set verbosity levels between 0 and 2 to get more or less detailed output while the model converges. The tolerance level determines the stopping point, 1e-6 being the default and lower numbers leading to more precise results.
 
