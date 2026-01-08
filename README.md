@@ -15,7 +15,7 @@ Version 24.01 allows the user to run different models within the same quantitati
 
 ## Copyright
 
-Copyright 2019-2024 Kiel Institute for the World Economy & Austrian Institute of Economic Research, KITE Development Team
+Copyright 2019-2026 Kiel Institute for the World Economy & Austrian Institute of Economic Research, KITE Development Team
 
 ## Developers
 
@@ -61,7 +61,7 @@ Load the initial conditions from a folder `"input/../initial_conditions.rds"`
 initial_conditions = read_rds("input/../initial_conditions.rds")
 ```
 
-**NOTE:** Email us at [tradepolicy@ifw-kiel.de](mailto:tradepolicy@ifw-kiel.de) for access to example initial conditions.
+**NOTE:** Email us at [kite@kielinstitut.de](mailto:kite@kielinstitut.de) for access to example initial conditions.
 
 ### Step 2: Set Model Scenarios
 
