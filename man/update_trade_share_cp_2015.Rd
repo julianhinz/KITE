@@ -30,5 +30,5 @@ update_trade_share_cp_2015(
 Array of new trade shares, dimensions: origin x destination x sector.
 }
 \description{
-Compute new trade shares following Caliendo & Parro (2015) equation (12).`
+Compute new trade shares following Caliendo & Parro (2015) equation (12).
 }

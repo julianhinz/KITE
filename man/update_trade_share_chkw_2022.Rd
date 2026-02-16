@@ -30,5 +30,5 @@ update_trade_share_chkw_2022(
 Array of new trade shares, dimensions: origin x destination x sector.
 }
 \description{
-Compute new trade shares following Chowdhry, Hinz, Kamin & Wanner (2022) equation (12).`
+Compute new trade shares following Chowdhry, Hinz, Kamin & Wanner (2022) equation (12).
 }

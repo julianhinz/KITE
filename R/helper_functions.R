@@ -15,7 +15,7 @@
 #' Cast variable from data.tables to vectors, matrices and arrays
 #'
 #' @description
-#' `cast_variable()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
+#' `cast_variable()` converts a data.table into an array with named dimensions. Non-data.table inputs are returned sorted.
 #'
 #' @return Vector/matrix/array
 #'
@@ -107,7 +107,7 @@ initialize_variable = function (dims, value = 1) {
 #' Melt variable from vectors, matrices and arrays, to data.tables
 #'
 #' @description
-#' `melt_variable()`
+#' `melt_variable()` converts an array back into a data.table with named dimension columns and a value column.
 #'
 #' @return Data.table
 #'

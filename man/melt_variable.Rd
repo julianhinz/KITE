@@ -13,5 +13,5 @@ melt_variable(x)
 Data.table
 }
 \description{
-`melt_variable()`
+`melt_variable()` converts an array back into a data.table with named dimension columns and a value column.
 }

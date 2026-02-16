@@ -13,5 +13,5 @@ cast_variable(x)
 Vector/matrix/array
 }
 \description{
-`cast_variable()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
+`cast_variable()` converts a data.table into an array with named dimensions. Non-data.table inputs are returned sorted.
 }

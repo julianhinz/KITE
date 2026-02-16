@@ -324,7 +324,7 @@ update_price_index_cp_2015 = function (price_change,
 #' Update trade share matrix for Caliendo and Parro (2015)
 #'
 #' @description
-#' Compute new trade shares following Caliendo & Parro (2015) equation (12).`
+#' Compute new trade shares following Caliendo & Parro (2015) equation (12).
 #'
 #' @return Array of new trade shares, dimensions: origin x destination x sector.
 #'

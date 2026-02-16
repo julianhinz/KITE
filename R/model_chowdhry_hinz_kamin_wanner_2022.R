@@ -250,7 +250,7 @@ update_price_index_chkw_2022 = function (price_change,
 #' Update trade share matrix for Chowdhry, Hinz, Kamin & Wanner (2022)
 #'
 #' @description
-#' Compute new trade shares following Chowdhry, Hinz, Kamin & Wanner (2022) equation (12).`
+#' Compute new trade shares following Chowdhry, Hinz, Kamin & Wanner (2022) equation (12).
 #'
 #' @return Array of new trade shares, dimensions: origin x destination x sector.
 #'
