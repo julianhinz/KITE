@@ -37,9 +37,29 @@ process_results = function(results){
   if (is.null(initial_conditions$trade_balance)) initial_conditions$trade_balance = initialize_variable(settings$model_dimensions[c("country")])
   if (is.null(model_scenario$trade_balance_new)) model_scenario$trade_balance_new = initial_conditions$trade_balance
 
+  # compute input_share ----
+  initial_conditions$input_share = initial_conditions$intermediate_share
+  for (c in settings$model_dimensions$country) initial_conditions$input_share[,,c] = t((1 - initial_conditions$factor_share[,c]) * t(initial_conditions$intermediate_share[,,c]))
+
   # compute initial expenditure if necessary ----
-  if (model == "caliendo_parro_2015") {
-    if (is.null(initial_conditions$expenditure)) {
+  if (is.null(initial_conditions$expenditure)) {
+    if (!is.null(output$transfer)) {
+      # CHKW model
+      initial_conditions$expenditure = update_expenditure_chkw_2022(initialize_variable(settings$model_dimensions[c("sector", "country")]),
+                                                                    initial_conditions$consumption_share,
+                                                                    initial_conditions$input_share,
+                                                                    initial_conditions$trade_share,
+                                                                    initial_conditions$tariff,
+                                                                    initial_conditions$export_subsidy,
+                                                                    initial_conditions$value_added,
+                                                                    initialize_variable(settings$model_dimensions[c("country")]),
+                                                                    initial_conditions$trade_balance,
+                                                                    initialize_variable(settings$model_dimensions[c("country")], value = 0),
+                                                                    settings$model_dimensions,
+                                                                    settings$tolerance,
+                                                                    verbose = FALSE)
+    } else {
+      # CP model
       initial_conditions$expenditure = update_expenditure_cp_2015(initialize_variable(settings$model_dimensions[c("sector", "country")]),
                                                                   initial_conditions$consumption_share,
                                                                   initial_conditions$input_share,
@@ -51,7 +71,7 @@ process_results = function(results){
                                                                   initial_conditions$trade_balance,
                                                                   settings$model_dimensions,
                                                                   settings$tolerance,
-                                                                  verbose = F)
+                                                                  verbose = FALSE)
     }
   }
 
@@ -90,11 +110,6 @@ process_results = function(results){
 
   # compute trade share / flow change ----
   output$trade_share_change = output$trade_share_new / initial_conditions$trade_share
-
-  output$trade_flow = initialize_variable(settings$model_dimensions[c("origin", "destination", "sector")])
-  for (c in settings$model_dimensions$country) output$trade_flow[c,,] = initial_conditions$trade_share[c,,] * t(initial_conditions$expenditure)
-
-  output$trade_flow_change = output$trade_flow_new / output$trade_flow
 
   # compute tariff revenue ----
   output$tariff_revenue = initialize_variable(settings$model_dimensions[c("country")])

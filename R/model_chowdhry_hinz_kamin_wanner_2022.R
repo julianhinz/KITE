@@ -167,7 +167,7 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
     criterion = sum(abs(input$wage_change - input$wage_change0))
     change_list <- rbind(change_list, as.matrix(t(c(as.numeric(Sys.time()), criterion))))
 
-    if (settings$verbose == 1L && h > 5) cli_status_update(id = status1, "{symbol$arrow_right} Currently in iteration {h}, convergence in about {predict_convergence_eta(change_list[,1],change_list[,2], settings$model_dimensions$tolerance)} seconds.")
+    if (settings$verbose == 1L && h > 5) cli_status_update(id = status1, "{symbol$arrow_right} Currently in iteration {h}, convergence in about {predict_convergence_eta(change_list[,1],change_list[,2], settings$tolerance)} seconds.")
     if (settings$verbose >= 2L) cat(" \u2014 Criterion = ", criterion, "\n")
 
     h = h + 1
@@ -316,7 +316,8 @@ update_expenditure_chkw_2022 = function (expenditure_new,
   # iterate to new expenditure instead of inverting
   crit = 1
   j = 1
-  while(crit >= tolerance) {
+  max_exp_iter = 10000
+  while(crit >= tolerance && j <= max_exp_iter) {
     if (verbose == 2L) cat("\r \u2014 Expenditure update, criterion = ")
     sum_exp0 = sum(expenditure_new)
     for (c in model_dimensions$destination) {
