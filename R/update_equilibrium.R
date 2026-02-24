@@ -32,7 +32,7 @@ update_equilibrium = function (model = NULL,
   if (is.null(settings$max_iterations)) settings$max_iterations = 1000
   if (is.null(settings$tolerance)) settings$tolerance = 1e-4
   if (is.null(settings$vfactor)) settings$vfactor = 0.1
-  if (is.null(settings$verbose)) settings$verbose = TRUE
+  if (is.null(settings$verbose)) settings$verbose = 1L
 
   # initializing variables ----
   if (settings$verbose >= 1L) cli_h1("Initializing variables")
