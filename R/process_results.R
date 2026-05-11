@@ -33,11 +33,11 @@ process_results.kite_result = function(results, ...) {
   # otherwise passthrough. Adding new model files with their own
   # process_results.<model> S3 method will take precedence over this.
   model_id = as.character(results[['model']])[1]
-  # Models that share the CP2015 result structure can use the standard processor.
+  # Models that share the standard result structure can use the standard processor.
   # If a new model file provides its own process_results.<model> S3 method,
   # it will take precedence over this fallback.
-  cp2015_compatible = c("caliendo_parro_2015")
-  if (model_id %in% cp2015_compatible) {
+  standard_compatible = c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022")
+  if (model_id %in% standard_compatible) {
     return(.process_results_standard(results))
   }
   .process_results_passthrough(results)
@@ -46,6 +46,9 @@ process_results.kite_result = function(results, ...) {
 
 #' @export
 process_results.caliendo_parro_2015 = function(results, ...) .process_results_standard(results)
+
+#' @export
+process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .process_results_standard(results)
 
 .process_results_standard = function(results) {
 
@@ -84,23 +87,45 @@ process_results.caliendo_parro_2015 = function(results, ...) .process_results_st
   if (is.null(model_scenario[['trade_balance_new']])) model_scenario[['trade_balance_new']] = initial_conditions[['trade_balance']]
 
   # compute initial expenditure ----
-  initial_conditions[['expenditure_result']] = update_expenditure_cp_2015(
-    initialize_variable(settings[['model_dimensions']][c("country", "sector")]),
-    initial_conditions[['consumption_share']],
-    initial_conditions[['input_share']],
-    initial_conditions[['trade_share']],
-    initial_conditions[['tariff']],
-    initial_conditions[['export_subsidy']],
-    initial_conditions[['value_added']],
-    initialize_variable(settings[['model_dimensions']][c("country")]),
-    initial_conditions[['trade_balance']],
-    settings[['model_dimensions']],
-    settings[['tolerance']],
-    verbose = FALSE,
-    convergence_method = "root_mean_square"
-  )
-  initial_conditions[['expenditure']] = initial_conditions[['expenditure_result']][['expenditure_new']]
-  initial_conditions[['expenditure_result']] = NULL
+  if (model == "chowdhry_hinz_kamin_wanner_2022" && is.null(initial_conditions[['expenditure']])) {
+    initial_conditions[['transfer']] = initialize_variable(settings[['model_dimensions']][c("country")], value = 0)
+    initial_conditions[['expenditure_result']] = update_expenditure_chkw_2022(
+      initialize_variable(settings[['model_dimensions']][c("sector", "country")]),
+      initial_conditions[['consumption_share']],
+      initial_conditions[['input_share']],
+      initial_conditions[['trade_share']],
+      initial_conditions[['tariff']],
+      initial_conditions[['export_subsidy']],
+      initial_conditions[['value_added']],
+      initialize_variable(settings[['model_dimensions']][c("country")]),
+      initial_conditions[['trade_balance']],
+      initial_conditions[['transfer']],
+      settings[['model_dimensions']],
+      settings[['tolerance']],
+      verbose = FALSE
+    )
+    initial_conditions[['expenditure']] = t(initial_conditions[['expenditure_result']][['expenditure_new']])
+    initial_conditions[['transfer']] = NULL
+    initial_conditions[['expenditure_result']] = NULL
+  } else {
+    initial_conditions[['expenditure_result']] = update_expenditure_cp_2015(
+      initialize_variable(settings[['model_dimensions']][c("country", "sector")]),
+      initial_conditions[['consumption_share']],
+      initial_conditions[['input_share']],
+      initial_conditions[['trade_share']],
+      initial_conditions[['tariff']],
+      initial_conditions[['export_subsidy']],
+      initial_conditions[['value_added']],
+      initialize_variable(settings[['model_dimensions']][c("country")]),
+      initial_conditions[['trade_balance']],
+      settings[['model_dimensions']],
+      settings[['tolerance']],
+      verbose = FALSE,
+      convergence_method = "root_mean_square"
+    )
+    initial_conditions[['expenditure']] = initial_conditions[['expenditure_result']][['expenditure_new']]
+    initial_conditions[['expenditure_result']] = NULL
+  }
 
   # compute new trade flows ----
   output[['trade_flow']] = initialize_variable(settings[['model_dimensions']][c("origin", "destination", "sector")])
