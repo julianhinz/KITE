@@ -390,24 +390,29 @@ check_convergence <- function(new_values, old_values,
 #'
 #' @param arr An n-dimensional array.
 #' @param keep_dims An integer vector specifying the dimensions to keep after the summation.
-#' @param ncores Number of cores to use for computation, defaults to 1.
 #' @return An array with dimensions corresponding to `keep_dims`, containing the summed values.
 #' @export
 #' @examples
 #' arr <- array(1:24, dim = c(2, 3, 4))
 #' result <- array_sum(arr, c(1, 2))
-array_sum <- function(arr, keep_dims, ncores = 1) {
+array_sum <- function(arr, keep_dims) {
+  if (!is.array(arr) && !is.matrix(arr)) {
+    stop("arr must be an array.")
+  }
+  keep_dims <- as.integer(keep_dims)
   dims <- dim(arr)
-  result_flat <- array_sum_cpp(as.numeric(arr), dims, keep_dims, ncores)
-  result_array <- array(result_flat, dim = dims[keep_dims])
-  return(result_array)
+  if (anyNA(keep_dims) || any(keep_dims < 1L) || any(keep_dims > length(dims))) {
+    stop("keep_dims out of bounds.")
+  }
+  result <- apply(arr, keep_dims, sum)
+  array(result, dim = dims[keep_dims], dimnames = dimnames(arr)[keep_dims])
 }
 
 #' Sweep Over Array Margins
 #'
-#' Optimised replacement for [base::sweep()] that applies an element-wise operation
-#' between an array and the supplied statistics broadcast over the requested margins
-#' while preserving dimension names.
+#' Applies an element-wise operation between an array and the supplied
+#' statistics broadcast over the requested margins while preserving dimension
+#' names. Matches the semantics of [base::sweep()].
 #'
 #' @param x Numeric array.
 #' @param MARGIN Integer or character vector identifying the margins over which
@@ -416,8 +421,6 @@ array_sum <- function(arr, keep_dims, ncores = 1) {
 #' @param STATS Numeric array or vector that is broadcastable over `MARGIN`.
 #' @param FUN Character scalar choosing the operation. Supported values are
 #'   `"+"`, `"-"`, `"*"`, and `"/"`.
-#' @param threads Integer scalar; number of threads. Use `0L` to let the
-#'   runtime pick the default.
 #'
 #' @return An array with the same shape (and dimnames) as `x` containing the
 #'   swept result.
@@ -428,7 +431,7 @@ array_sum <- function(arr, keep_dims, ncores = 1) {
 #' dimnames(x) <- list(country = c("A", "B", "C"), sector = c("X", "Y", "Z", "W"))
 #' stats <- c(1, 2, 3)
 #' array_sweep(x, MARGIN = "country", STATS = stats, FUN = "-")
-array_sweep <- function(x, MARGIN, STATS, FUN = "*", threads = 0L) {
+array_sweep <- function(x, MARGIN, STATS, FUN = "*") {
   if (!is.array(x)) {
     stop("x must be an array with dim().")
   }
@@ -450,6 +453,12 @@ array_sweep <- function(x, MARGIN, STATS, FUN = "*", threads = 0L) {
   if (length(margins) == 0L || anyNA(margins)) {
     stop("MARGIN must contain valid dimensions.")
   }
+  if (any(margins < 1L) || any(margins > length(dim(x)))) {
+    stop("MARGIN out of bounds.")
+  }
+  if (anyDuplicated(margins)) {
+    stop("MARGIN must not repeat.")
+  }
 
   op <- FUN
   if (is.function(op)) {
@@ -463,11 +472,20 @@ array_sweep <- function(x, MARGIN, STATS, FUN = "*", threads = 0L) {
     stop("FUN must be one of '+', '-', '*', '/'.")
   }
 
-  threads <- as.integer(threads)[1L]
+  expected_dims <- dim(x)[margins]
+  if (is.array(STATS)) {
+    if (!identical(as.integer(dim(STATS)), as.integer(expected_dims))) {
+      stop("dim(STATS) does not match the margins of x.")
+    }
+  } else if (length(STATS) != 1L && length(STATS) != prod(expected_dims)) {
+    if (!(length(margins) == 1L && length(STATS) == expected_dims[1])) {
+      stop("dim(STATS) does not match the margins of x.")
+    }
+  }
 
   if (!is.numeric(STATS)) {
     storage.mode(STATS) <- "double"
   }
 
-  array_sweep_cpp(x, margins, STATS, op, threads)
+  base::sweep(x, MARGIN = margins, STATS = STATS, FUN = match.fun(op))
 }
