@@ -1,7 +1,8 @@
 Package: KITE
 Title: Kiel Institute Trade Policy Evaluation Model
 Version: 26.05.0.9000
-Date: 2026-05-11
+ReleaseName: Balmy Cumbuco (Flatwater)
+Date: 2026-05-12
 Authors@R: c(
     person("Julian", "Hinz", role = c("cre","aut"),
            email = "julian.hinz@kielinstitut.de"),
@@ -14,9 +15,15 @@ Description: An R package implementing the Kiel Institute's general equilibrium
     intra- and international input-output linkages; supports simulation of
     trade policy changes via tariff and non-tariff measure scenarios.
 License: file LICENSE
-Depends: R (>= 3.5.0)
-Imports: data.table, cli
-Suggests: testthat (>= 3.0.0)
+Depends:
+    R (>= 3.5.0)
+Imports:
+    data.table,
+    cli,
+    lubridate,
+    stringr
+Suggests:
+    testthat (>= 3.0.0)
 URL: https://github.com/julianhinz/KITE
 BugReports: https://github.com/julianhinz/KITE/issues
 Encoding: UTF-8
