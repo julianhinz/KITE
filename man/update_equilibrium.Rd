@@ -21,7 +21,13 @@ update_equilibrium(
 \item{settings}{List of settings}
 }
 \value{
-List of list of data.tables with model, initial_conditions, model_scenario and output
+An S3-classed `kite_result` (also inheriting the model class, e.g.
+  `caliendo_parro_2015` or `chowdhry_hinz_kamin_wanner_2022`) with elements:
+  `model` (character id), `model_function` (the model function used),
+  `initial_conditions`, `model_scenario`, `output` (named list of result
+  tables produced by the model), `settings`, and an `info` block with
+  `convergence` (TRUE / FALSE / NA), `criterion`, `iterations`, and
+  `elapsed_seconds`. Use [process_results()] for downstream formatting.
 }
 \description{
 `update_equilibrium()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.

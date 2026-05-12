@@ -187,6 +187,9 @@ caliendo_parro_2015 = function (input, settings) {
 
   if (settings[['verbose']] >= 1L) cli_alert_success("Convergence after {h-1} iterations and {format_time_diff(timer_start, Sys.time())}")
 
+  input[['criterion']] = criterion
+  input[['iterations']] = h - 1
+
   # return
   output_variables(input, c(c("wage_change",
                               "input_cost_change",
@@ -194,7 +197,9 @@ caliendo_parro_2015 = function (input, settings) {
                               "trade_share_new",
                               "expenditure_new",
                               "value_added_new",
-                              "trade_balance_new"),
+                              "trade_balance_new",
+                              "criterion",
+                              "iterations"),
                             settings[["additional_output_variables"]]))
 }
 

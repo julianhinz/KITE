@@ -3,7 +3,13 @@
 #' @description
 #' `update_equilibrium()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
 #'
-#' @return List of list of data.tables with model, initial_conditions, model_scenario and output
+#' @return An S3-classed `kite_result` (also inheriting the model class, e.g.
+#'   `caliendo_parro_2015` or `chowdhry_hinz_kamin_wanner_2022`) with elements:
+#'   `model` (character id), `model_function` (the model function used),
+#'   `initial_conditions`, `model_scenario`, `output` (named list of result
+#'   tables produced by the model), `settings`, and an `info` block with
+#'   `convergence` (TRUE / FALSE / NA), `criterion`, `iterations`, and
+#'   `elapsed_seconds`. Use [process_results()] for downstream formatting.
 #'
 #' @param model Model specification to run, e.g. caliendo_parro_2015()
 #' @param initial_conditions List of initial conditions.
@@ -36,7 +42,7 @@ update_equilibrium = function (model = NULL,
   if (is.null(settings[['max_iterations']])) settings[['max_iterations']] = 1000
   if (is.null(settings[['tolerance']])) settings[['tolerance']] = 1e-4
   if (is.null(settings[['vfactor']])) settings[['vfactor']] = 0.1
-  if (is.null(settings[['verbose']])) settings[['verbose']] = T
+  if (is.null(settings[['verbose']])) settings[['verbose']] = 1L
 
   # move elasticity variables into nested list if provided at top-level
   initial_conditions <- nest_elasticity_variables(initial_conditions)
@@ -94,7 +100,10 @@ update_equilibrium = function (model = NULL,
   }
   elapsed_seconds = as.numeric(difftime(Sys.time(), timer_start, units = "secs"))
 
-  convergence = TRUE
+  # Convergence is TRUE only when the model returned a finite criterion below
+  # tolerance. Without a finite criterion we can't claim convergence, so we
+  # report NA rather than silently saying TRUE.
+  convergence = NA
   if (is.finite(criterion) && !is.null(settings[['tolerance']])) {
     convergence = criterion <= settings[['tolerance']]
   }

@@ -19,7 +19,7 @@ an S3 result type. Existing 24.01 scripts will need a one-time migration.
 - `check_convergence()` and `format_time_diff()` are exported diagnostic helpers.
 - `inst/examples/example.R` is a shipped end-to-end tutorial. Locate it via `system.file("examples", "example.R", package = "KITE")`.
 - `inst/CITATION` provides two `bibentry` calls — the KITE Whitepaper as the canonical reference and a `Manual` entry for the package version itself. `citation("KITE")` returns both.
-- `inst/CITATION.bib` ships the same two entries in plain BibTeX for direct copy-paste.
+- `inst/KITE.bib` ships the same two entries in plain BibTeX for direct copy-paste.
 
 ## Bug fixes
 

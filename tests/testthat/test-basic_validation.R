@@ -2,9 +2,6 @@
 library(testthat)
 
 test_that("check_convergence basic validation works", {
-  # Skip if check_convergence is not available
-  skip_if_not(exists("check_convergence"), "check_convergence function not available")
-  
   # Test basic functionality that should always work
   old_vals <- c(1.0, 2.0, 3.0)
   new_vals <- c(1.01, 2.01, 3.01)
