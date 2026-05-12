@@ -1,4 +1,4 @@
-# KITE Model Suite <img src="man/figures/logo_kite.png" align="right" width="160" />
+# KITE Model Suite <img src="man/figures/logo_kite.png" align="right" width="160" alt="KITE logo" />
 
 The KITE Model Suite implements general-equilibrium quantitative trade
 models in the *New Quantitative Trade Model* tradition: a multi-sector
