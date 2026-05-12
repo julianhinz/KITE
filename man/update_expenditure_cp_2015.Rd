@@ -13,10 +13,12 @@ update_expenditure_cp_2015(
   export_subsidy_new,
   value_added,
   wage_change,
-  trade_balance,
+  trade_balance_new,
   model_dimensions,
   tolerance,
-  verbose
+  verbose,
+  convergence_method,
+  max_inner_iterations = 5000L
 )
 }
 \arguments{
@@ -36,13 +38,17 @@ update_expenditure_cp_2015(
 
 \item{wage_change}{Vector of change in wages, dimension: country.}
 
-\item{trade_balance}{Vector of aggregate trade balance, dimension: country.}
+\item{trade_balance_new}{Vector of new aggregate trade balance, dimension: country.}
 
 \item{model_dimensions}{List of model dimensions.}
 
-\item{tolerance}{tolerance}
+\item{tolerance}{Tolerance for inner convergence.}
 
-\item{verbose}{verbose}
+\item{verbose}{Verbosity level.}
+
+\item{convergence_method}{Method for convergence checking.}
+
+\item{max_inner_iterations}{Maximum number of inner iterations before the loop bails out (default 5000).}
 }
 \value{
 Matrix of new expenditures, dimensions: sector x country.

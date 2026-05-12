@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper_functions.R
 \name{\%diag\%}
 \alias{\%diag\%}
-\title{Slightly faster implementation of diagional elements of matrix product}
+\title{Slightly faster implementation of diagonal elements of matrix product}
 \usage{
 x \%diag\% y
 }
@@ -12,5 +12,5 @@ x \%diag\% y
 \item{y}{Matrix}
 }
 \description{
-Slightly faster implementation of diagional elements of matrix product
+Slightly faster implementation of diagonal elements of matrix product
 }

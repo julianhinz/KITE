@@ -3,5 +3,6 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-
-tests/
+^dev$
+^\.github$
+.*\.tar\.gz$
