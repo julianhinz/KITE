@@ -27,4 +27,4 @@ Suggests:
 URL: https://github.com/julianhinz/KITE
 BugReports: https://github.com/julianhinz/KITE/issues
 Encoding: UTF-8
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.0.0
