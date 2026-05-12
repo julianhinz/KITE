@@ -215,15 +215,23 @@ output_variables <- function(input, vars) {
 #' or `"-"` if insufficient data.
 #'
 predict_convergence_eta <- function(change_list, tolerance) {
-  if (nrow(change_list) < 3) return("-")
-  # OLS slope and intercept for log(criterion) ~ time, time anchored at row 2
-  t <- change_list[-1, 1] - change_list[2, 1]
-  y <- log(change_list[-1, 2])
+  if (!is.matrix(change_list) || nrow(change_list) < 3) return("-")
+  t_all <- change_list[-1, 1] - change_list[2, 1]
+  crit <- change_list[-1, 2]
+  keep <- is.finite(t_all) & is.finite(crit) & crit > 0
+  if (sum(keep) < 3) return("-")
+  t <- t_all[keep]
+  y <- log(crit[keep])
   t_mean <- mean(t); y_mean <- mean(y)
   t_dev <- t - t_mean
-  slope <- sum(t_dev * (y - y_mean)) / sum(t_dev * t_dev)
+  denom <- sum(t_dev * t_dev)
+  if (!is.finite(denom) || denom <= 0) return("-")
+  slope <- sum(t_dev * (y - y_mean)) / denom
+  if (!is.finite(slope) || slope >= 0) return("-")
   intercept <- y_mean - slope * t_mean
-  max(0, (log(tolerance) - intercept) / slope - max(t))
+  eta <- (log(tolerance) - intercept) / slope - max(t)
+  if (!is.finite(eta)) return("-")
+  max(0, eta)
 }
 
 #' Format Time Difference

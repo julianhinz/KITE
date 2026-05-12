@@ -66,7 +66,8 @@
 <span>  <span class="va">model_dimensions</span>,</span>
 <span>  <span class="va">tolerance</span>,</span>
 <span>  <span class="va">verbose</span>,</span>
-<span>  <span class="va">convergence_method</span></span>
+<span>  <span class="va">convergence_method</span>,</span>
+<span>  max_inner_iterations <span class="op">=</span> <span class="fl">5000L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -115,15 +116,19 @@
 
 
 <dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
-<dd><p>tolerance</p></dd>
+<dd><p>Tolerance for inner convergence.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>verbose</p></dd>
+<dd><p>Verbosity level.</p></dd>
 
 
 <dt id="arg-convergence-method">convergence_method<a class="anchor" aria-label="anchor" href="#arg-convergence-method"></a></dt>
 <dd><p>Method for convergence checking.</p></dd>
+
+
+<dt id="arg-max-inner-iterations">max_inner_iterations<a class="anchor" aria-label="anchor" href="#arg-max-inner-iterations"></a></dt>
+<dd><p>Maximum number of inner iterations before the loop bails out (default 5000).</p></dd>
 
 </dl></div>
     <div id="value">

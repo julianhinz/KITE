@@ -197,7 +197,7 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
     criterion = check_convergence(input[['wage_change']], input[['wage_change0']], method = settings[['convergence_method']])
     change_list <- rbind(change_list, as.matrix(t(c(as.numeric(Sys.time()), criterion))))
 
-    if (settings[['verbose']] == 1L && h > 5) cli_status_update(id = status1, "{symbol[['arrow_right']]} Currently in iteration {h}, convergence in about {predict_convergence_eta(change_list[,1],change_list[,2], settings[['tolerance']])} seconds.")
+    if (settings[['verbose']] == 1L && h > 5) cli_status_update(id = status1, "{symbol[['arrow_right']]} Currently in iteration {h}, convergence in about {predict_convergence_eta(change_list, settings[['tolerance']])} seconds.")
     if (settings[['verbose']] >= 2L) cat(" \u2014 Criterion = ", criterion, "\n")
 
     h = h + 1

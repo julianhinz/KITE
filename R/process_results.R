@@ -121,7 +121,8 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
       settings[['model_dimensions']],
       settings[['tolerance']],
       verbose = FALSE,
-      convergence_method = "root_mean_square"
+      convergence_method = "root_mean_square",
+      max_inner_iterations = 5000L
     )
     initial_conditions[['expenditure']] = initial_conditions[['expenditure_result']][['expenditure_new']]
     initial_conditions[['expenditure_result']] = NULL

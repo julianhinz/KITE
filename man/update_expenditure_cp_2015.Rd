@@ -17,7 +17,8 @@ update_expenditure_cp_2015(
   model_dimensions,
   tolerance,
   verbose,
-  convergence_method
+  convergence_method,
+  max_inner_iterations = 5000L
 )
 }
 \arguments{
@@ -41,11 +42,13 @@ update_expenditure_cp_2015(
 
 \item{model_dimensions}{List of model dimensions.}
 
-\item{tolerance}{tolerance}
+\item{tolerance}{Tolerance for inner convergence.}
 
-\item{verbose}{verbose}
+\item{verbose}{Verbosity level.}
 
 \item{convergence_method}{Method for convergence checking.}
+
+\item{max_inner_iterations}{Maximum number of inner iterations before the loop bails out (default 5000).}
 }
 \value{
 Matrix of new expenditures, dimensions: sector x country.

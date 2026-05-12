@@ -12,14 +12,9 @@
 
 caliendo_parro_2015 = function (input, settings) {
 
-  # check if valid input ----
-  if (is.null(settings[['vfactor']])) {
-    cli_alert_danger("'vfactor' has to be specified.")
-    return()
-  }
-
   # initialize settings
   if (is.null(settings[['vfactor']])) settings[['vfactor']] = 0.1
+  if (is.null(settings[['max_inner_iterations']])) settings[['max_inner_iterations']] = 5000L
   if (is.null(settings[['trade_balance_rule']])) settings[['trade_balance_rule']] = "fixed"
   if (is.null(settings[['tolerance_expenditure']])) settings[['tolerance_expenditure']] = settings[['tolerance']]
   if (is.null(settings[['tolerance_output']])) settings[['tolerance_output']] = settings[['tolerance']]
@@ -93,13 +88,13 @@ caliendo_parro_2015 = function (input, settings) {
   timer_start = Sys.time()
   change_list <- as.matrix(t(c(as.numeric(Sys.time()),0)))
   
-  n_iterations_output_income_update = 0
-  
+  inner_converged_flag = TRUE
+
   criterion = 1
   h = 1
-  while (h <= settings[['max_iterations']] && 
-         (criterion > settings[['tolerance']] || 
-          (settings[['require_inner_convergence']] && n_iterations_output_income_update != 1))) {
+  while (h <= settings[['max_iterations']] &&
+         (criterion > settings[['tolerance']] ||
+          (settings[['require_inner_convergence']] && !inner_converged_flag))) {
 
     if (settings[['verbose']] >= 2L) cat(format(Sys.time()), ":", "Iteration", h, "\n")
 
@@ -152,12 +147,13 @@ caliendo_parro_2015 = function (input, settings) {
                                                                 settings[['model_dimensions']],
                                                                 settings[['tolerance_output']],
                                                                 settings[['convergence_method']],
-                                                                settings[['verbose']])
+                                                                settings[['verbose']],
+                                                                settings[['max_inner_iterations']])
 
     input[['output_new']] = input[['output_income_new']]$output_new
     input[['income_new']] = input[['output_income_new']]$income_new
     input[['expenditure_new']] = input[['output_income_new']]$expenditure_new
-    n_iterations_output_income_update = input[['output_income_new']]$n_iterations_output_update
+    inner_converged_flag = isTRUE(input[['output_income_new']]$inner_converged)
     input[['output_income_new']] = NULL
 
     if (settings[['verbose']] >= 2L) cat(" \u2713\n")
@@ -299,23 +295,24 @@ update_trade_share_cp_2015 = function (trade_share,
 #' @description
 #' Updates output and income analogous to Caliendo & Parro (2015) equation (13) for the expenditure update.
 #'
-#' @return Matrix of new expenditures, dimensions: sector x country.
+#' @return Matrix of new expenditures, dimensions: country x sector.
 #'
-#' @param output_new Matrix of new expenditures, dimensions: sector x country.
-#' @param income_new Matrix of new incomes, dimensions: country.
-#' @param consumption_share Matrix of elasticities of substitution or consumption shares, dimensions: sector x country.
-#' @param input_share Array of beta-multiplied input-output coefficients, dimensions: input_sector x output_sector x country.
-#' @param trade_share_new Array of new trade flows (FOB), dimensions: origin x destination x sector.
+#' @param output_new Matrix of new outputs, dimensions: country x sector.
+#' @param income_new Vector of new incomes, dimension: country.
+#' @param consumption_share Matrix of consumption shares, dimensions: country x sector.
+#' @param input_share Array of beta-multiplied input-output coefficients, dimensions: country x input x output.
+#' @param trade_share_new Array of new trade shares, dimensions: origin x destination x sector.
 #' @param tariff_new Array of new tariffs, dimensions: origin x destination x sector.
-#' @param export_subsidy_new Array of export taxes, dimensions: origin x destination x sector.
-#' @param value_added Matrix of value added, dimension: country.
+#' @param export_subsidy_new Array of export subsidies, dimensions: origin x destination x sector.
+#' @param value_added Vector of value added, dimension: country.
 #' @param wage_change Vector of change in wages, dimension: country.
 #' @param population_change Vector of change in population, dimension: country.
 #' @param trade_balance_new Vector of new aggregate trade balance, dimension: country.
 #' @param model_dimensions List of model dimensions.
-#' @param tolerance tolerance
+#' @param tolerance Tolerance for inner convergence.
 #' @param convergence_method Method for convergence checking.
-#' @param verbose verbose
+#' @param verbose Verbosity level.
+#' @param max_inner_iterations Maximum number of inner iterations before the loop bails out (default 5000).
 #'
 update_output_income_cp_2015 = function (output_new,
                                          income_new,
@@ -331,7 +328,8 @@ update_output_income_cp_2015 = function (output_new,
                                          model_dimensions,
                                          tolerance,
                                          convergence_method,
-                                         verbose) {
+                                         verbose,
+                                         max_inner_iterations = 5000L) {
 
   # initialize variables
   input_purchases_new = initialize_variable(model_dimensions[c("country", "input", "output")])
@@ -341,7 +339,8 @@ update_output_income_cp_2015 = function (output_new,
   # iterate to new output
   crit = 1
   j = 1
-  while (crit >= tolerance) {
+  inner_converged = FALSE
+  while (j <= max_inner_iterations) {
     if (verbose == 2L) cat("\r \u2014 Output update, criterion = ")
 
     out0 = output_new
@@ -364,14 +363,17 @@ update_output_income_cp_2015 = function (output_new,
     output_new <- array_sum(trade_flow_new / (tariff_new * export_subsidy_new), c(1, 3))
 
     crit = check_convergence(output_new, out0, method = convergence_method)
+    if (verbose == 2L) cat(sprintf("%.1e", crit), "after iteration", j)
+    if (!is.finite(crit)) break
+    if (crit < tolerance) { inner_converged = TRUE; break }
     j = j + 1
-    if (verbose == 2L) cat(sprintf("%.1e", crit), "after iteration", j-1)
   }
 
   list(income_new = income_new,
        output_new = output_new,
        expenditure_new = expenditure_new,
-       n_iterations_output_update = j - 1)
+       n_iterations_output_update = j,
+       inner_converged = inner_converged)
 }
 
 
@@ -392,9 +394,10 @@ update_output_income_cp_2015 = function (output_new,
 #' @param wage_change Vector of change in wages, dimension: country.
 #' @param trade_balance_new Vector of new aggregate trade balance, dimension: country.
 #' @param model_dimensions List of model dimensions.
-#' @param tolerance tolerance
-#' @param verbose verbose
+#' @param tolerance Tolerance for inner convergence.
+#' @param verbose Verbosity level.
 #' @param convergence_method Method for convergence checking.
+#' @param max_inner_iterations Maximum number of inner iterations before the loop bails out (default 5000).
 #'
 
 update_expenditure_cp_2015 = function (expenditure_new,
@@ -409,12 +412,14 @@ update_expenditure_cp_2015 = function (expenditure_new,
                                        model_dimensions,
                                        tolerance,
                                        verbose,
-                                       convergence_method) {
+                                       convergence_method,
+                                       max_inner_iterations = 5000L) {
 
   # iterate to new expenditure instead of inverting
   crit = 1
   j = 1
-  while(crit >= tolerance) {
+  inner_converged = FALSE
+  while (j <= max_inner_iterations) {
     if (verbose == 2L) cat("\r \u2014 Expenditure update, criterion = ")
 
     exp0 = expenditure_new
@@ -430,9 +435,12 @@ update_expenditure_cp_2015 = function (expenditure_new,
     }
 
     crit = check_convergence(expenditure_new, exp0, method = convergence_method)
+    if (verbose == 2L) cat(crit, "after iteration", j)
+    if (!is.finite(crit)) break
+    if (crit < tolerance) { inner_converged = TRUE; break }
     j = j + 1
-    if (verbose == 2L) cat(crit, "after iteration", j-1)
   }
   list(expenditure_new = expenditure_new,
-       n_iterations_expenditure_update = j - 1)
+       n_iterations_expenditure_update = j,
+       inner_converged = inner_converged)
 }

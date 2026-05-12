@@ -19,25 +19,26 @@ update_output_income_cp_2015(
   model_dimensions,
   tolerance,
   convergence_method,
-  verbose
+  verbose,
+  max_inner_iterations = 5000L
 )
 }
 \arguments{
-\item{output_new}{Matrix of new expenditures, dimensions: sector x country.}
+\item{output_new}{Matrix of new outputs, dimensions: country x sector.}
 
-\item{income_new}{Matrix of new incomes, dimensions: country.}
+\item{income_new}{Vector of new incomes, dimension: country.}
 
-\item{consumption_share}{Matrix of elasticities of substitution or consumption shares, dimensions: sector x country.}
+\item{consumption_share}{Matrix of consumption shares, dimensions: country x sector.}
 
-\item{input_share}{Array of beta-multiplied input-output coefficients, dimensions: input_sector x output_sector x country.}
+\item{input_share}{Array of beta-multiplied input-output coefficients, dimensions: country x input x output.}
 
-\item{trade_share_new}{Array of new trade flows (FOB), dimensions: origin x destination x sector.}
+\item{trade_share_new}{Array of new trade shares, dimensions: origin x destination x sector.}
 
 \item{tariff_new}{Array of new tariffs, dimensions: origin x destination x sector.}
 
-\item{export_subsidy_new}{Array of export taxes, dimensions: origin x destination x sector.}
+\item{export_subsidy_new}{Array of export subsidies, dimensions: origin x destination x sector.}
 
-\item{value_added}{Matrix of value added, dimension: country.}
+\item{value_added}{Vector of value added, dimension: country.}
 
 \item{wage_change}{Vector of change in wages, dimension: country.}
 
@@ -47,14 +48,16 @@ update_output_income_cp_2015(
 
 \item{model_dimensions}{List of model dimensions.}
 
-\item{tolerance}{tolerance}
+\item{tolerance}{Tolerance for inner convergence.}
 
 \item{convergence_method}{Method for convergence checking.}
 
-\item{verbose}{verbose}
+\item{verbose}{Verbosity level.}
+
+\item{max_inner_iterations}{Maximum number of inner iterations before the loop bails out (default 5000).}
 }
 \value{
-Matrix of new expenditures, dimensions: sector x country.
+Matrix of new expenditures, dimensions: country x sector.
 }
 \description{
 Updates output and income analogous to Caliendo & Parro (2015) equation (13) for the expenditure update.

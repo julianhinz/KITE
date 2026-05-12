@@ -68,7 +68,8 @@
 <span>  <span class="va">model_dimensions</span>,</span>
 <span>  <span class="va">tolerance</span>,</span>
 <span>  <span class="va">convergence_method</span>,</span>
-<span>  <span class="va">verbose</span></span>
+<span>  <span class="va">verbose</span>,</span>
+<span>  max_inner_iterations <span class="op">=</span> <span class="fl">5000L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -77,23 +78,23 @@
 
 
 <dl><dt id="arg-output-new">output_new<a class="anchor" aria-label="anchor" href="#arg-output-new"></a></dt>
-<dd><p>Matrix of new expenditures, dimensions: sector x country.</p></dd>
+<dd><p>Matrix of new outputs, dimensions: country x sector.</p></dd>
 
 
 <dt id="arg-income-new">income_new<a class="anchor" aria-label="anchor" href="#arg-income-new"></a></dt>
-<dd><p>Matrix of new incomes, dimensions: country.</p></dd>
+<dd><p>Vector of new incomes, dimension: country.</p></dd>
 
 
 <dt id="arg-consumption-share">consumption_share<a class="anchor" aria-label="anchor" href="#arg-consumption-share"></a></dt>
-<dd><p>Matrix of elasticities of substitution or consumption shares, dimensions: sector x country.</p></dd>
+<dd><p>Matrix of consumption shares, dimensions: country x sector.</p></dd>
 
 
 <dt id="arg-input-share">input_share<a class="anchor" aria-label="anchor" href="#arg-input-share"></a></dt>
-<dd><p>Array of beta-multiplied input-output coefficients, dimensions: input_sector x output_sector x country.</p></dd>
+<dd><p>Array of beta-multiplied input-output coefficients, dimensions: country x input x output.</p></dd>
 
 
 <dt id="arg-trade-share-new">trade_share_new<a class="anchor" aria-label="anchor" href="#arg-trade-share-new"></a></dt>
-<dd><p>Array of new trade flows (FOB), dimensions: origin x destination x sector.</p></dd>
+<dd><p>Array of new trade shares, dimensions: origin x destination x sector.</p></dd>
 
 
 <dt id="arg-tariff-new">tariff_new<a class="anchor" aria-label="anchor" href="#arg-tariff-new"></a></dt>
@@ -101,11 +102,11 @@
 
 
 <dt id="arg-export-subsidy-new">export_subsidy_new<a class="anchor" aria-label="anchor" href="#arg-export-subsidy-new"></a></dt>
-<dd><p>Array of export taxes, dimensions: origin x destination x sector.</p></dd>
+<dd><p>Array of export subsidies, dimensions: origin x destination x sector.</p></dd>
 
 
 <dt id="arg-value-added">value_added<a class="anchor" aria-label="anchor" href="#arg-value-added"></a></dt>
-<dd><p>Matrix of value added, dimension: country.</p></dd>
+<dd><p>Vector of value added, dimension: country.</p></dd>
 
 
 <dt id="arg-wage-change">wage_change<a class="anchor" aria-label="anchor" href="#arg-wage-change"></a></dt>
@@ -125,7 +126,7 @@
 
 
 <dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
-<dd><p>tolerance</p></dd>
+<dd><p>Tolerance for inner convergence.</p></dd>
 
 
 <dt id="arg-convergence-method">convergence_method<a class="anchor" aria-label="anchor" href="#arg-convergence-method"></a></dt>
@@ -133,12 +134,16 @@
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>verbose</p></dd>
+<dd><p>Verbosity level.</p></dd>
+
+
+<dt id="arg-max-inner-iterations">max_inner_iterations<a class="anchor" aria-label="anchor" href="#arg-max-inner-iterations"></a></dt>
+<dd><p>Maximum number of inner iterations before the loop bails out (default 5000).</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Matrix of new expenditures, dimensions: sector x country.</p>
+    <p>Matrix of new expenditures, dimensions: country x sector.</p>
     </div>
 
   </div>

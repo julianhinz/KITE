@@ -64,8 +64,8 @@
 <td>User-facing call <code>process_results(result)</code> is unchanged. Custom downstream methods should adopt S3 (<code>process_results.&lt;class&gt;</code>).</td>
 </tr><tr><td>
 <code>settings</code> list</td>
-<td>New required key: <code>vfactor</code> (no default). New optional keys: <code>convergence_method = "root_mean_square"</code>, <code>tolerance_expenditure</code>, <code>tolerance_output</code>, <code>require_inner_convergence = TRUE</code>.</td>
-<td>Add <code>vfactor = 0.1</code> (or your tuned value) to existing <code>settings</code> lists. The old <code>tolerance</code> is still accepted as a fallback for both per-loop tolerances.</td>
+<td>New optional keys: <code>vfactor</code> (defaults to <code>0.1</code>), <code>convergence_method</code> (defaults to <code>"root_mean_square"</code>), <code>tolerance_expenditure</code>, <code>tolerance_output</code>, <code>require_inner_convergence</code> (defaults to <code>TRUE</code>), <code>max_inner_iterations</code> (defaults to <code>5000</code>).</td>
+<td>Existing scripts continue to work; pass <code>vfactor</code> or any other key explicitly only if you want to override the default. The old <code>tolerance</code> is still accepted as a fallback for both per-loop tolerances.</td>
 </tr><tr><td>
 <code><a href="../reference/cast_variable.html">cast_variable()</a></code> default <code>variable_order</code>
 </td>
