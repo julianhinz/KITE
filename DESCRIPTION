@@ -1,5 +1,5 @@
 Package: KITE
-Title: Kiel Institute Trade Policy Evaluation Model
+Title: KITE Model Suite
 Version: 26.05
 ReleaseName: Balmy Cumbuco (Flatwater)
 Date: 2026-05-12
@@ -10,10 +10,10 @@ Authors@R: c(
            email = "hendrik.mahlkow@kielinstitut.de"),
     person("Joschka", "Wanner", role = "aut",
            email = "joschka.wanner@kielinstitut.de"))
-Description: An R package implementing the Kiel Institute's general equilibrium
-    trade policy evaluation model. Multi-sector Ricardian framework with
-    intra- and international input-output linkages; supports simulation of
-    trade policy changes via tariff and non-tariff measure scenarios.
+Description: The KITE Model Suite is a quantitative framework for international
+    trade policy analysis. Multi-sector Ricardian models with intra- and
+    international input-output linkages; supports simulation of trade policy
+    changes via tariff and non-tariff measure scenarios.
 License: file LICENSE
 Depends:
     R (>= 3.5.0)

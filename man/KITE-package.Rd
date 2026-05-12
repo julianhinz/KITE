@@ -3,9 +3,12 @@
 \docType{package}
 \name{KITE-package}
 \alias{KITE-package}
-\title{KITE: Compute Counterfactual Scenarios for Trade Policy}
+\title{KITE Model Suite}
 \description{
-The KITE package provides tools to compute counterfactual scenarios for trade policy using advanced econometric methods.
+A quantitative framework for international trade policy analysis.
+Multi-sector Ricardian models with intra- and international input-output
+linkages; supports simulation of trade policy changes via tariff and
+non-tariff measure scenarios.
 }
 \seealso{
 Useful links:

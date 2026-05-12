@@ -1,10 +1,10 @@
-# KITE — Kiel Institute Trade Policy Evaluation <img src="man/figures/logo_kite.png" align="right" width="160" />
+# KITE Model Suite <img src="man/figures/logo_kite.png" align="right" width="160" />
 
-The KITE package implements general-equilibrium quantitative trade models in
-the *New Quantitative Trade Model* tradition: a multi-sector Ricardian
-framework with intra- and international input–output linkages, extending
-Eaton & Kortum (2002) along the lines of Caliendo & Parro (2015). Trade
-policy enters via tariffs and non-tariff measures; the model returns
+The KITE Model Suite implements general-equilibrium quantitative trade
+models in the *New Quantitative Trade Model* tradition: a multi-sector
+Ricardian framework with intra- and international input–output linkages,
+extending Eaton & Kortum (2002) along the lines of Caliendo & Parro (2015).
+Trade policy enters via tariffs and non-tariff measures; the model returns
 welfare, production, and trade-flow changes under user-specified
 counterfactuals.
 
