@@ -199,7 +199,9 @@ melt_variable = function (x) {
 #' @param vars Character vector of variable names to extract
 #'
 output_variables <- function(input, vars) {
-  setNames(lapply(vars, function(v) input[[v]]), vars)
+  result <- lapply(vars, function(v) input[[v]])
+  names(result) <- vars
+  result
 }
 
 #' Predict convergence ETA
@@ -214,8 +216,14 @@ output_variables <- function(input, vars) {
 #'
 predict_convergence_eta <- function(change_list, tolerance) {
   if (nrow(change_list) < 3) return("-")
-  model <- lm(log(change_list[-1, 2]) ~ I(change_list[-1, 1] - change_list[2, 1]))
-  max(0, (log(tolerance) - coef(model)[1]) / coef(model)[2] - max(change_list[-1, 1] - change_list[2, 1]))
+  # OLS slope and intercept for log(criterion) ~ time, time anchored at row 2
+  t <- change_list[-1, 1] - change_list[2, 1]
+  y <- log(change_list[-1, 2])
+  t_mean <- mean(t); y_mean <- mean(y)
+  t_dev <- t - t_mean
+  slope <- sum(t_dev * (y - y_mean)) / sum(t_dev * t_dev)
+  intercept <- y_mean - slope * t_mean
+  max(0, (log(tolerance) - intercept) / slope - max(t))
 }
 
 #' Format Time Difference
