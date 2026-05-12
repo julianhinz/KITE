@@ -29,7 +29,7 @@ an S3 result type. Existing 24.01 scripts will need a one-time migration.
 
 ## Notes
 
-- A package license is still pending. The next release is expected to ship a resolved `LICENSE` and enable CRAN-style checks (`R CMD check --as-cran`).
+- The package is now dual-licensed: GPL-3 by default; a commercial licence is available on request from `KITE@kielinstitut.de` for uses that need different terms (e.g. closed-source redistribution).
 - More published-paper model variants will be added in upcoming releases.
 
 # KITE 24.01

@@ -40,8 +40,8 @@ cast_variable = function(
     data.table::setorderv(x, rev(names(x)[-length(names(x) )]))
     return(array(
       data = x[, value],
-      dim = dim.data.table(x),
-      dimnames = dimnames.data.table(x)
+      dim = dt_array_dim(x),
+      dimnames = dt_array_dimnames(x)
     ))
   }
 
@@ -73,7 +73,7 @@ cast_variable = function(
 #'
 #' @param d data.table
 #'
-dim.data.table = function (d) {
+dt_array_dim = function (d) {
   r = integer()
   for (n in names(d)[-length(d)]) r = c(r, d[, uniqueN(get(n))])
   r
@@ -83,7 +83,7 @@ dim.data.table = function (d) {
 #'
 #' @param d data.table
 #'
-dimnames.data.table = function (d) {
+dt_array_dimnames = function (d) {
   r = list()
   for (n in names(d)[-length(d)]) r[[n]] = d[, unique(get(n))]
   r
@@ -222,19 +222,17 @@ predict_convergence_eta <- function(change_list, tolerance) {
 #'
 #' @param start_time POSIXct object representing the start time.
 #' @param end_time POSIXct object representing the end time.
-#' @importFrom lubridate as.duration
-#' @importFrom stringr str_pad str_c
 #' @return A character string in the format "X:YY minutes" or "Z seconds".
 #' @export
 format_time_diff <- function(start_time, end_time) {
-  time_diff <- as.duration(end_time - start_time)
-  minutes <- as.integer(time_diff) %/% 60
-  seconds <- as.integer(time_diff) %% 60
+  seconds_total <- as.integer(difftime(end_time, start_time, units = "secs"))
+  minutes <- seconds_total %/% 60L
+  seconds <- seconds_total %% 60L
 
-  if (minutes == 0) {
-    return(str_c(seconds, " seconds"))
+  if (minutes == 0L) {
+    paste0(seconds, " seconds")
   } else {
-    return(str_c(minutes, ":", str_pad(seconds, width = 2, pad = "0"), " minutes"))
+    paste0(minutes, ":", sprintf("%02d", seconds), " minutes")
   }
 }
 

@@ -5,4 +5,11 @@
 #' linkages; supports simulation of trade policy changes via tariff and
 #' non-tariff measure scenarios.
 #'
+#' @importFrom stats coef lm setNames
 "_PACKAGE"
+
+# Silence R CMD check NOTEs about data.table NSE column references.
+utils::globalVariables(c(
+  "value", "country", "origin", "destination", "sector",
+  "input", "output", "welfare_change"
+))

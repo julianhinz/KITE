@@ -96,6 +96,21 @@ Use `citation("KITE")` for ready-to-paste entries.
 - Chowdhry, S., Hinz, J., Kamin, K. and Wanner, J. (2024). Brothers in arms: The value of coalitions in sanctions regimes. *Economic Policy*, 39(118), 471–512. [doi:10.1093/epolic/eiae019](https://doi.org/10.1093/epolic/eiae019)
 - Eaton, J. and Kortum, S. (2002). Technology, Geography, and Trade. *Econometrica*, 70(5), 1741–1779.
 
+## Licence
+
+KITE is **dual-licensed**.
+
+The default public licence is **GPL-3** (see the package `DESCRIPTION`).
+You can use, modify, and redistribute KITE under the terms of GPL-3,
+including for commercial work — any redistributed modifications must
+also be released under GPL-3.
+
+If you would like to use KITE under terms other than GPL-3 — for
+example, to embed it in a closed-source product or to distribute a
+modified version without releasing source — contact
+[KITE@kielinstitut.de](mailto:KITE@kielinstitut.de) for a commercial
+licence.
+
 ## Copyright
 
 Copyright 2019–2026 KITE Development Team.
