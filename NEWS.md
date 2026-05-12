@@ -1,4 +1,4 @@
-# KITE 26.05 — Balmy Cumbuco (Flatwater)
+# KITE 26.05 — Balmy Cumbuco
 
 ## Breaking changes
 

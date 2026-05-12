@@ -77,7 +77,7 @@ package as a software entry:
   title  = {{KITE} Model Suite},
   author = {Hinz, Julian and Mahlkow, Hendrik and Wanner, Joschka},
   year   = {2026},
-  note   = {R package version 26.05 -- Balmy Cumbuco (Flatwater)},
+  note   = {R package version 26.05 -- Balmy Cumbuco},
   url    = {https://github.com/julianhinz/KITE}
 }
 ```

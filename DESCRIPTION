@@ -1,7 +1,7 @@
 Package: KITE
 Title: KITE Model Suite
 Version: 26.05
-ReleaseName: Balmy Cumbuco (Flatwater)
+ReleaseName: Balmy Cumbuco
 Date: 2026-05-12
 Authors@R: c(
     person("Julian", "Hinz", role = c("cre","aut"),
