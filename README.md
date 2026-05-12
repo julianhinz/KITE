@@ -98,4 +98,4 @@ Use `citation("KITE")` for ready-to-paste entries.
 
 ## Copyright
 
-Copyright 2019–2026 Kiel Institute for the World Economy, KITE Development Team.
+Copyright 2019–2026 KITE Development Team.
