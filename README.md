@@ -1,139 +1,116 @@
-# KITE — Kiel Institute Trade Policy Evaluation <img src="man/figures/logo_kite.png" align="right" width="200" height="240"/>
-***
+# KITE Model Suite <img src="man/figures/logo_kite.png" align="right" width="160" alt="KITE logo" />
 
-The KITE model provides a tool for simulating and estimating various types of (trade) policy changes. The underlying model uses a computable general equilibrium (CGE) framework of the type that is commonly described as **"New Quantitative Trade Model"**. The model has originally been developed by [Caliendo & Parro (2015)](#1). They built a multi-sector version of the Ricardian trade model of [Eaton & Kortum (2002)](#2), where countries produce and sell domestically as well as internationally according to their relative comparative advantage. The model extends this framework by allowing for extensive intra- and international input-output linkages where goods and services may enter as both final and intermediate goods. Trade policy is conducted through the tightening or easing of trade barriers in form of tariffs and non-tariff measures.
+The KITE Model Suite implements general-equilibrium quantitative trade
+models in the *New Quantitative Trade Model* tradition: a multi-sector
+Ricardian framework with intra- and international input–output linkages,
+extending Eaton & Kortum (2002) along the lines of Caliendo & Parro (2015).
+Trade policy enters via tariffs and non-tariff measures; the model returns
+welfare, production, and trade-flow changes under user-specified
+counterfactuals.
 
-By now the model has been extensively used to evaluate (free) trade agreements (e.g. NAFTA, TTIP) and trade disputes (i.e. US-China trade war, Airbus-Boeing case) and economic sanction regimes. It derives the economic consequences for production, value added and welfare based on pre-defined scenarios that specify the policies to be evaluated. It allows various types of data sources that can be used in constructing the underlying model variables and/or parameters.
+KITE is maintained by the Kiel Institute for the World Economy. For access
+to calibrated initial conditions, contact us at
+[KITE@kielinstitut.de](mailto:KITE@kielinstitut.de).
 
-The model is constantly updated to improve efficiency and/or extend the underlying framework. Current projects include the implementation of CO2 footage in production or the introduction of the factor land in the production function.
+## What 26.05 ships
 
-## Updates
+- `caliendo_parro_2015` — Caliendo & Parro (2015) multi-sector Ricardian model.
+- `chowdhry_hinz_kamin_wanner_2022` — Chowdhry, Hinz, Kamin & Wanner (2024) sanctions-coalition extension.
 
-Version 24.01 allows the user to run different models within the same quantitative framework. Included models are:
-- Caliendo, Lorenzo, and Fernando Parro. 2015. “Estimates of the Trade and Welfare Effects of NAFTA.” The Review of Economic Studies 82 (1): 1–44.
-- Sonali Chowdhry, Julian Hinz, Katrin Kamin and Joschka Wanner. 2024. "Brothers in arms: The value of coalitions in sanctions regimes." Economic Policy, forthcoming.
+More published-paper model variants will be added in upcoming releases.
 
-## Copyright
+## Breaking changes from 24.01
 
-Copyright 2019-2026 Kiel Institute for the World Economy & Austrian Institute of Economic Research, KITE Development Team
-
-## Developers
-
-* Julian Hinz, Kiel Institute, Mail: [julian.hinz@ifw-kiel.de](mailto:julian.hinz@ifw-kiel.de)
-  
-* Hendrik Mahlkow, Austrian Institute of Economic Research, Mail: [hendrik.mahlkow@wifo.ac.at](mailto:hendrik.mahlkow@wifo.ac.at)
-  
-* Joschka Wanner, Kiel Institute, Mail: [joschka.wanner@ifw-kiel.de](mailto:joschka.wanner@ifw-kiel.de)
+Version 26.05 is a **hard-break** architecture upgrade. If you have scripts
+written against 24.01, see [`NEWS.md`](NEWS.md) for the full migration
+table. The most common change: `update_equilibrium()` now returns an
+S3-classed result instead of a plain list, and `process_results()` is an
+S3 generic.
 
 ## Installing KITE
 
-KITE is a [R](#3) package. To install this package, download the current beta version and install using
-
-```{R}
-install.packages("~/path/to/KITE_24.01.tar.gz", repos = NULL, type = "source")
-```
-
-## Tutorial
-
-The package comes with a vignette describing different trade policy scenarios. You can load it with the following command (the package needs to be installed):
+From GitHub:
 
 ```r
-vignette("KITE") # Trade policy scenarios with KITE
+remotes::install_github("julianhinz/KITE")
+```
+
+From a local checkout:
+
+```r
+install.packages(".", repos = NULL, type = "source")
 ```
 
 ## Usage
 
-Running the model requires the user to follow 4 basic steps:
+Running KITE follows four steps:
 
-1. Choose an input-output table.
-2. Define scenarios that are supposed to be simulated by the model.
-3. Feed the data from 1) and 2) into the model and run.
-4. Process the results.
+1. Load or build initial conditions (input–output table, trade shares, elasticities).
+2. Define a counterfactual scenario (tariff or NTM changes).
+3. Run `update_equilibrium()` with the chosen model.
+4. Process the result with `process_results()`.
 
+A complete worked example is shipped at:
 
-The script `example.R` provides a step-by-step algorithm in performing a scenario analysis with KITE. It sources from different scripts and functions that are embedded in the KITE package and will be explained further below. Please use the script for all your calculations.
-
-### Step 1: Choose Initial Conditions (input-output tables, trade shares, etc.)
-
-Load the initial conditions from a folder `"input/../initial_conditions.rds"`
-
-```{R}
-initial_conditions = read_rds("input/../initial_conditions.rds")
+```r
+system.file("examples", "example.R", package = "KITE")
 ```
 
-**NOTE:** Email us at [kite@kielinstitut.de](mailto:kite@kielinstitut.de) for access to example initial conditions.
+See `?caliendo_parro_2015` and `?chowdhry_hinz_kamin_wanner_2022` for help pages.
 
-### Step 2: Set Model Scenarios
+## Citation
 
-Define and set the scenarios for the model run by specifying the origin and destination countries concerned, as well as the counterfactual policy that is supposed to represent the given policy scenario. 
+Please cite the KITE Whitepaper as the canonical reference, with the
+package as a software entry:
 
-**Counterfactual Tariff**
-```{R}
-tariff_war = copy(initial_conditions$tariff)
+```bibtex
+@techreport{HinzMahlkowWanner2025,
+  author      = {Hinz, Julian and Mahlkow, Hendrik and Wanner, Joschka},
+  title       = {The {KITE} Model Suite: A Quantitative Framework for International Trade Analysis},
+  institution = {Kiel Institute for the World Economy},
+  type        = {KITE White Paper},
+  year        = {2025},
+  url         = {https://trade.kielinstitut.de/KTTM/KITE_whitepaper.pdf}
+}
 
-# US tariffs on Chinese goods and services
-tariff_war[origin == "usa" & destination == "chn", value := 1.2]
-
-# Chinese tariffs on US goods and services
-tariff_war[destination == "usa" & origin == "chn", value := 1.2]
-
+@Manual{KITE2026,
+  title  = {{KITE} Model Suite},
+  author = {Hinz, Julian and Mahlkow, Hendrik and Wanner, Joschka},
+  year   = {2026},
+  note   = {R package version 26.05 -- Balmy Cumbuco},
+  url    = {https://github.com/julianhinz/KITE}
+}
 ```
 
-In this example KITE simulates the *US-China trade war*, assuming that both countries simultaneously set up a tariff of 20% across all sectors. "value" specifies the tariff as value = 1 + tariff/100.
+Use `citation("KITE")` for ready-to-paste entries.
 
-The user may specify other policies that are supposed to enter the counterfactual situation, such as non tariff barriers or export subsidies. The procedure works exactly the same as in the case of a tariff change. For more detailed information on the options for policy changes please proceed to Step 3. For more examples see `vignette("KITE")`. 
+## Authors
 
-
-### Step 3: Run the Model
-
-The function calculates a new equilibrium based on the policy changes the user feeds into the model. The corresponding results are expressed in exact hat algebra, i.e., in discrete changes relating the base-line equilibrium and the counterfactual equilibrium (scenario). 
-
-The function rests on four building blocks, all of which need to be specified.
-
-1. `model = my_new_model`
-
-Here the user needs to specify the model used, e.g., `model = caliendo_parro_2015`. The model is specified in a respective `model_*.R` file. The user may also want to specify a new model, in which case the user needs to specify the model in a `model_my_new_model.R` script and then source it manually.
-
-2. `initial conditions = initial_conditions`
-
-Specify the initial conditions.
-
-1. `model_scenario = list(tariff_new = tariff_war,...)`
-
-Here, the user needs to specify all the variables that represent the desired counterfactual/scenario situation. Please note that these variables need to be defined in "Step 2: Set Model Scenarios", above. Options to specify the counterfactual situation include tariffs (`tariff_new`) and non-tariff barriers (`ntb_change`). The user may even want to recalculate the baseline equilibrium to change the situation a given counterfactual/scenario is supposed to be compared to. Options include tariffs, non-tariff barriers, consumption share, factor share, intermediate share, trade elasticity, trade share, value-added, trade balance.
-
-3. `verbose = 2` and `tolerance = 1e-4`
-
-Set verbosity levels between 0 and 2 to get more or less detailed output while the model converges. The tolerance level determines the stopping point, 1e-6 being the default and lower numbers leading to more precise results.
-
-The full command should look something like this
-
-```{R}
-results = update_equilibrium(model = chowdhry_hinz_kamin_wanner_2022,
-                             initial_conditions = initial_conditions,
-                             model_scenario = list(tariff_new = tariff_war,
-                                                   coalition_member = c("usa", "can", "mex")),
-                             settings = list(verbose = 2L,
-                                             tolerance = 1e-4))
-```
-
-# Citation
-
-Please cite the package as follows:
-
-```{bibtex}
-@Manual{,
-    title = {KITE: Kiel Institute Trade Policy Evaluation Model},
-    author = {Julian Hinz and Hendrik Mahlkow and Joschka Wanner},
-    year = {2024},
-    note = {R package version 24.01},
-  }
-```
+* Julian Hinz, Kiel Institute — [julian.hinz@kielinstitut.de](mailto:julian.hinz@kielinstitut.de)
+* Hendrik Mahlkow, Kiel Institute — [hendrik.mahlkow@kielinstitut.de](mailto:hendrik.mahlkow@kielinstitut.de)
+* Joschka Wanner, Kiel Institute — [joschka.wanner@kielinstitut.de](mailto:joschka.wanner@kielinstitut.de)
 
 ## References
 
-<i id="#1">Caliendo, Lorenzo, and Fernando Parro.</i> 2015. “Estimates of the Trade and Welfare Effects of NAFTA.” The Review of Economic Studies 82 (1): 1–44.
+- Caliendo, L. and Parro, F. (2015). Estimates of the Trade and Welfare Effects of NAFTA. *The Review of Economic Studies*, 82(1), 1–44.
+- Chowdhry, S., Hinz, J., Kamin, K. and Wanner, J. (2024). Brothers in arms: The value of coalitions in sanctions regimes. *Economic Policy*, 39(118), 471–512. [doi:10.1093/epolic/eiae019](https://doi.org/10.1093/epolic/eiae019)
+- Eaton, J. and Kortum, S. (2002). Technology, Geography, and Trade. *Econometrica*, 70(5), 1741–1779.
 
-<i id="#2">Eaton, Jonathan, and Samuel Kortum. 2002.</i> “Technology, Geography, and Trade.” Econometrica 70 (5): 1741–79.
+## Licence
 
-<i id="#3">R Core Team. 2020.</i> "R: A language and environment for statistical computing." R Foundation for Statistical Computing, Vienna, Austria.  https://www.R-project.org/
+KITE is **dual-licensed**.
+
+The default public licence is **GPL-3** (see the package `DESCRIPTION`).
+You can use, modify, and redistribute KITE under the terms of GPL-3,
+including for commercial work — any redistributed modifications must
+also be released under GPL-3.
+
+If you would like to use KITE under terms other than GPL-3 — for
+example, to embed it in a closed-source product or to distribute a
+modified version without releasing source — contact
+[KITE@kielinstitut.de](mailto:KITE@kielinstitut.de) for a commercial
+licence.
+
+## Copyright
+
+Copyright 2019–2026 KITE Development Team.

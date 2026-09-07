@@ -4,14 +4,17 @@
 \alias{process_results}
 \title{Process results for new equilibrium}
 \usage{
-process_results(results)
+process_results(results, ...)
 }
 \arguments{
-\item{results}{List of results from update_equilibrium.}
+\item{results}{List of results from `update_equilibrium()`.}
+
+\item{...}{Currently unused.}
 }
 \value{
-List of data.tables with additional variables
+List with `initial_conditions`, `model_scenario`, `output`, and `settings`.
 }
 \description{
-Takes the results from the updated equilibrium and computes additional variables.
+Takes the results from `update_equilibrium()` and computes additional variables.
+Uses S3 dispatch on the model-specific result class.
 }
