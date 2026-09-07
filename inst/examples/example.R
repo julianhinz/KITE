@@ -1,4 +1,4 @@
-# KITE 26.05 -- end-to-end tutorial
+# KITE -- end-to-end tutorial
 #
 # Demonstrates running both shipped models on a synthetic 3-country,
 # 2-sector economy. For calibrated initial conditions matching real

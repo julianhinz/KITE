@@ -6,3 +6,4 @@
 ^dev$
 ^\.github$
 .*\.tar\.gz$
+^LICENSE$

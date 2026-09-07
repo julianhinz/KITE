@@ -1,3 +1,12 @@
+# KITE 26.09
+
+Public release. Merges release/26.05 into main.
+
+- Adds a LICENSE file with the standard GPL-3 notice; `License: GPL-3`
+  in `DESCRIPTION`. Alternative or commercial licensing terms remain
+  available on request from `KITE@kielinstitut.de`.
+- Rewritten README.
+
 # KITE 26.05 — Balmy Cumbuco
 
 ## Breaking changes
