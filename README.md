@@ -1,67 +1,92 @@
-# KITE Model Suite <img src="man/figures/logo_kite.png" align="right" width="160" alt="KITE logo" />
+# KITE <img src="man/figures/logo_kite.png" align="right" width="140" alt="KITE logo" />
 
-The KITE Model Suite implements general-equilibrium quantitative trade
-models in the *New Quantitative Trade Model* tradition: a multi-sector
-Ricardian framework with intra- and international input–output linkages,
-extending Eaton & Kortum (2002) along the lines of Caliendo & Parro (2015).
-Trade policy enters via tariffs and non-tariff measures; the model returns
-welfare, production, and trade-flow changes under user-specified
-counterfactuals.
+[![Version](https://img.shields.io/badge/version-26.09-blue)](NEWS.md)
+[![License: GPL-3](https://img.shields.io/badge/license-GPL--3-blue)](LICENSE)
+[![R >= 3.5.0](https://img.shields.io/badge/R-%3E%3D%203.5.0-276DC3)](https://www.r-project.org/)
 
-KITE is maintained by the Kiel Institute for the World Economy. For access
-to calibrated initial conditions, contact us at
-[KITE@kielinstitut.de](mailto:KITE@kielinstitut.de).
+KITE is an open-source framework for quantitative trade-policy
+counterfactuals, developed at the Kiel Institute for the World Economy.
+It implements general-equilibrium trade models in the New Quantitative
+Trade Model tradition and solves them in changes with exact hat algebra:
+you supply a baseline and a policy scenario (tariffs, non-tariff
+measures), and KITE returns the counterfactual changes in welfare,
+production, and trade flows.
 
-## What 26.05 ships
+Website: [kite-model.org](https://kite-model.org) ·
+Try it in the browser: [kite-model.org/lab](https://kite-model.org/lab/)
 
-- `caliendo_parro_2015` — Caliendo & Parro (2015) multi-sector Ricardian model.
-- `chowdhry_hinz_kamin_wanner_2022` — Chowdhry, Hinz, Kamin & Wanner (2024) sanctions-coalition extension.
-
-More published-paper model variants will be added in upcoming releases.
-
-## Breaking changes from 24.01
-
-Version 26.05 is a **hard-break** architecture upgrade. If you have scripts
-written against 24.01, see [`NEWS.md`](NEWS.md) for the full migration
-table. The most common change: `update_equilibrium()` now returns an
-S3-classed result instead of a plain list, and `process_results()` is an
-S3 generic.
-
-## Installing KITE
-
-From GitHub:
+## Install
 
 ```r
+# install.packages("remotes")
 remotes::install_github("julianhinz/KITE")
 ```
 
-From a local checkout:
+Requires R >= 3.5.0. Imports `data.table` and `cli`.
+
+## Quick start
+
+The package ships a complete synthetic end-to-end example
+(3 countries, 2 sectors, a 20% bilateral tariff war), which runs
+both shipped models:
 
 ```r
-install.packages(".", repos = NULL, type = "source")
+library(KITE)
+
+Sys.setenv(KITE_RUN_EXAMPLE = "1")
+source(system.file("examples", "example.R", package = "KITE"))
 ```
 
-## Usage
+Expected output:
 
-Running KITE follows four steps:
-
-1. Load or build initial conditions (input–output table, trade shares, elasticities).
-2. Define a counterfactual scenario (tariff or NTM changes).
-3. Run `update_equilibrium()` with the chosen model.
-4. Process the result with `process_results()`.
-
-A complete worked example is shipped at:
-
-```r
-system.file("examples", "example.R", package = "KITE")
+```
+CP2015 converged in 48 iterations (criterion = 9.523421e-05 ).
+CHKW2022 converged in 53 iterations (criterion = 9.778594e-05 ).
 ```
 
-See `?caliendo_parro_2015` and `?chowdhry_hinz_kamin_wanner_2022` for help pages.
+The example builds initial conditions from scratch, defines a tariff
+scenario, calls `update_equilibrium()`, and summarises the result with
+`process_results()`. Open the file itself as a template for your own
+scenarios.
 
-## Citation
+## Models
 
-Please cite the KITE Whitepaper as the canonical reference, with the
-package as a software entry:
+| Function | Model | Reference |
+|---|---|---|
+| `caliendo_parro_2015` | Multi-sector Ricardian model with input–output linkages | Caliendo & Parro (2015), *Review of Economic Studies* |
+| `chowdhry_hinz_kamin_wanner_2022` | Sanctions-coalition extension | Chowdhry, Hinz, Kamin & Wanner (2024), *Economic Policy* — function name keeps the 2022 working-paper vintage |
+
+These are the 2 models currently shipped in this package; more are
+coming. The full KITE suite behind the [website](https://kite-model.org)
+comprises 13 models, available on request via
+[kite@kielinstitut.de](mailto:kite@kielinstitut.de).
+
+## How it works
+
+KITE models are multi-sector Ricardian general-equilibrium models with
+intra- and international input–output linkages, in the tradition of
+Eaton & Kortum (2002) and Caliendo & Parro (2015). Instead of solving
+levels, KITE solves in relative changes ("exact hat algebra"): observed
+baseline shares and a small set of elasticities are sufficient to
+compute the counterfactual equilibrium, with no need to estimate
+technology levels or trade costs. `update_equilibrium()` iterates the
+equilibrium conditions to convergence; `process_results()` turns the
+solution into welfare, production, and trade-flow changes. The
+[KITE white paper](https://trade.kielinstitut.de/KTTM/KITE_whitepaper.pdf)
+describes the framework in detail.
+
+## Data
+
+Public examples in this package are synthetic. Calibrated real-world
+baselines (trade and input–output data, elasticities) are not bundled;
+they are available on request via
+[kite@kielinstitut.de](mailto:kite@kielinstitut.de).
+
+## Cite
+
+Please cite the KITE white paper as the canonical reference, and the
+package as a software entry. `citation("KITE")` returns both; the same
+entries ship in BibTeX at `system.file("KITE.bib", package = "KITE")`:
 
 ```bibtex
 @techreport{HinzMahlkowWanner2025,
@@ -72,45 +97,19 @@ package as a software entry:
   year        = {2025},
   url         = {https://trade.kielinstitut.de/KTTM/KITE_whitepaper.pdf}
 }
-
-@Manual{KITE2026,
-  title  = {{KITE} Model Suite},
-  author = {Hinz, Julian and Mahlkow, Hendrik and Wanner, Joschka},
-  year   = {2026},
-  note   = {R package version 26.05 -- Balmy Cumbuco},
-  url    = {https://github.com/julianhinz/KITE}
-}
 ```
 
-Use `citation("KITE")` for ready-to-paste entries.
+## License
 
-## Authors
+GPL-3 (see [LICENSE](LICENSE)). Alternative or commercial licensing
+terms are available on request via
+[kite@kielinstitut.de](mailto:kite@kielinstitut.de).
 
-* Julian Hinz, Kiel Institute — [julian.hinz@kielinstitut.de](mailto:julian.hinz@kielinstitut.de)
-* Hendrik Mahlkow, Kiel Institute — [hendrik.mahlkow@kielinstitut.de](mailto:hendrik.mahlkow@kielinstitut.de)
-* Joschka Wanner, Kiel Institute — [joschka.wanner@kielinstitut.de](mailto:joschka.wanner@kielinstitut.de)
+## Contact
 
-## References
+- Julian Hinz — [julian.hinz@kielinstitut.de](mailto:julian.hinz@kielinstitut.de)
+- Hendrik Mahlkow — [hendrik.mahlkow@kielinstitut.de](mailto:hendrik.mahlkow@kielinstitut.de)
+- Joschka Wanner — [joschka.wanner@kielinstitut.de](mailto:joschka.wanner@kielinstitut.de)
 
-- Caliendo, L. and Parro, F. (2015). Estimates of the Trade and Welfare Effects of NAFTA. *The Review of Economic Studies*, 82(1), 1–44.
-- Chowdhry, S., Hinz, J., Kamin, K. and Wanner, J. (2024). Brothers in arms: The value of coalitions in sanctions regimes. *Economic Policy*, 39(118), 471–512. [doi:10.1093/epolic/eiae019](https://doi.org/10.1093/epolic/eiae019)
-- Eaton, J. and Kortum, S. (2002). Technology, Geography, and Trade. *Econometrica*, 70(5), 1741–1779.
-
-## Licence
-
-KITE is **dual-licensed**.
-
-The default public licence is **GPL-3** (see the package `DESCRIPTION`).
-You can use, modify, and redistribute KITE under the terms of GPL-3,
-including for commercial work — any redistributed modifications must
-also be released under GPL-3.
-
-If you would like to use KITE under terms other than GPL-3 — for
-example, to embed it in a closed-source product or to distribute a
-modified version without releasing source — contact
-[KITE@kielinstitut.de](mailto:KITE@kielinstitut.de) for a commercial
-licence.
-
-## Copyright
-
-Copyright 2019–2026 KITE Development Team.
+General inquiries: [kite@kielinstitut.de](mailto:kite@kielinstitut.de) ·
+Issues: [github.com/julianhinz/KITE/issues](https://github.com/julianhinz/KITE/issues)
