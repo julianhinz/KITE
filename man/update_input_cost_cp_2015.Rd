@@ -7,6 +7,7 @@
 update_input_cost_cp_2015(
   input_cost_change,
   wage_change,
+  productivity_change,
   price_change,
   factor_share,
   intermediate_share,
@@ -17,6 +18,8 @@ update_input_cost_cp_2015(
 \item{input_cost_change}{Matrix of input cost changes, dimensions: sector x country.}
 
 \item{wage_change}{Vector of change in wages, dimension: country.}
+
+\item{productivity_change}{Vector of change in productivity, dimension: country x sector.}
 
 \item{price_change}{Matrix of price index changes, dimensions: sector x country.}
 

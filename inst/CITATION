@@ -1,0 +1,24 @@
+bibentry(
+  bibtype     = "TechReport",
+  key         = "HinzMahlkowWanner2025",
+  title       = "The KITE Model Suite: A Quantitative Framework for International Trade Analysis",
+  author      = c(person("Julian", "Hinz"),
+                  person("Hendrik", "Mahlkow"),
+                  person("Joschka", "Wanner")),
+  institution = "Kiel Institute for the World Economy",
+  type        = "KITE White Paper",
+  year        = 2025,
+  url         = "https://trade.kielinstitut.de/KTTM/KITE_whitepaper.pdf"
+)
+
+bibentry(
+  bibtype = "Manual",
+  key     = "KITE2026",
+  title   = "{KITE} Model Suite",
+  author  = c(person("Julian", "Hinz"),
+              person("Hendrik", "Mahlkow"),
+              person("Joschka", "Wanner")),
+  year    = 2026,
+  note    = "R package version 26.09",
+  url     = "https://github.com/julianhinz/KITE"
+)

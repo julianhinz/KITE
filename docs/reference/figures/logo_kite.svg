@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 0 480 480" width="480" height="480" role="img" aria-label="KITE Model Suite">
+  <title>KITE Model Suite</title>
+  <g>
+
+    <polygon points="200,40 340,200 200,240" fill="#0F0F0F"></polygon>
+    <polygon points="200,40 60,200 200,240" fill="none"></polygon>
+    <polygon points="200,240 340,200 200,440" fill="none"></polygon>
+    <polygon points="200,240 60,200 200,440" fill="#E8FF3A"></polygon>
+
+    <polygon points="200,40 340,200 200,440 60,200" fill="none" stroke="#0F0F0F" stroke-width="6" stroke-linejoin="round"></polygon>
+
+    <line x1="200" y1="40" x2="200" y2="440" stroke="#0F0F0F" stroke-width="6" stroke-linecap="butt"></line>
+    <line x1="60" y1="200" x2="340" y2="200" stroke="#0F0F0F" stroke-width="6" stroke-linecap="butt"></line>
+
+    <polyline points="60,200 200,240 340,200" fill="none" stroke="#0F0F0F" stroke-width="6" stroke-linejoin="round"></polyline>
+
+    <circle cx="200" cy="200" r="5" fill="#0F0F0F"></circle>
+
+    <path d="M 200 440 Q 130 510, 60 560" stroke="#0F0F0F" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 9" fill="none"></path>
+    <circle cx="60" cy="560" r="7" fill="#0F0F0F"></circle>
+  </g>
+</svg>

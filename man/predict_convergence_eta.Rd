@@ -4,16 +4,18 @@
 \alias{predict_convergence_eta}
 \title{Predict convergence ETA}
 \usage{
-predict_convergence_eta(time, change, tolerance, steps = 5)
+predict_convergence_eta(change_list, tolerance)
 }
 \arguments{
-\item{time}{Vector of time, relative or absolute}
+\item{change_list}{A matrix with two columns:
+- First column: Time (relative or absolute).
+- Second column: Convergence criterion values.}
 
-\item{change}{Vector of relative change in variable of interest}
-
-\item{tolerance}{Tolerance for which convergence is assumed to be achieved}
-
-\item{steps}{Steps to take into account for estimation}
+\item{tolerance}{Tolerance for which convergence is assumed to be achieved.}
+}
+\value{
+Estimated time (in the same units as `change_list` time) to reach the `tolerance`,
+or `"-"` if insufficient data.
 }
 \description{
 Predict convergence ETA
