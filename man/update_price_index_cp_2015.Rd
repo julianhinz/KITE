@@ -22,7 +22,7 @@ update_price_index_cp_2015(
 
 \item{input_cost_change}{Matrix of input cost changes, dimensions: sector x country.}
 
-\item{trade_elasticity}{Vector of trade elasticities, dimensions: sector.}
+\item{trade_elasticity}{Positive Frechet trade elasticity theta, dimensions: sector.}
 
 \item{model_dimensions}{List of model dimensions.}
 }

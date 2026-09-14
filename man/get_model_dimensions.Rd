@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper_functions.R
 \name{get_model_dimensions}
 \alias{get_model_dimensions}
-\title{Get all dimensions of model by inspecting initial conditions}
+\title{Get all dimensions of a model by inspecting initial conditions}
 \usage{
 get_model_dimensions(x)
 }
@@ -10,5 +10,5 @@ get_model_dimensions(x)
 \item{x}{List of data.tables of initial conditions}
 }
 \description{
-Get all dimensions of model by inspecting initial conditions
+Get all dimensions of a model by inspecting initial conditions
 }

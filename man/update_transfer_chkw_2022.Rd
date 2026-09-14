@@ -23,7 +23,8 @@ update_transfer_chkw_2022(
   trade_balance,
   price_change,
   coalition_member,
-  model_dimensions
+  model_dimensions,
+  trade_balance_new = trade_balance
 )
 }
 \arguments{
@@ -64,6 +65,8 @@ update_transfer_chkw_2022(
 \item{coalition_member}{Vector of country codes with coalition members, dimension: country.}
 
 \item{model_dimensions}{List of model dimensions.}
+
+\item{trade_balance_new}{Vector of counterfactual aggregate trade balance, dimension: country.}
 }
 \value{
 Vector of new transfers, dimensions: country.

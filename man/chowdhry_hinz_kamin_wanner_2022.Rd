@@ -17,3 +17,8 @@ List of list of data.tables with initial_conditions, model_scenarios and equilib
 \description{
 `chowdhry_hinz_kamin_wanner_2022()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
 }
+\references{
+Chowdhry, S., Hinz, J., Kamin, K. and Wanner, J. (2024). Brothers in arms: The value of
+coalitions in sanctions regimes. Economic Policy, 39(118), 471-512.
+doi:10.1093/epolic/eiae019
+}

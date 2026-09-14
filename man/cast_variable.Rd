@@ -4,14 +4,20 @@
 \alias{cast_variable}
 \title{Cast variable from data.tables to vectors, matrices and arrays}
 \usage{
-cast_variable(x)
+cast_variable(
+  x,
+  variable_order = c("country", "origin", "destination", "sector", "input", "output")
+)
 }
 \arguments{
 \item{x}{Data.table to be reshaped into vector/matrix/array with named dimensions if it is indeed a data.frame (i.e. data.table)}
+
+\item{variable_order}{A character vector specifying the desired order of the variables (columns) before casting.
+Defaults to country x origin x destination x sector x input x output.}
 }
 \value{
 Vector/matrix/array
 }
 \description{
-`cast_variable()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
+`cast_variable()` converts data.tables to arrays and recursively processes nested lists.
 }

@@ -12,7 +12,7 @@ caliendo_parro_2015(input, settings)
 \item{settings}{List of various settings and model dimensions}
 }
 \value{
-List of list of data.tables with initial_conditions, model_scenarios and equilibrium_new.
+List of list of new equilibrium `output`.
 }
 \description{
 `caliendo_parro_2015()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.

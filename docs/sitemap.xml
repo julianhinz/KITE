@@ -1,90 +1,41 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/caliendo_parro_2015.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cast_variable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/chowdhry_hinz_kamin_wanner_2022.html</loc>
-  </url>
-  <url>
-    <loc>/reference/compute_initial_conditions_cp_2015.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dim.data.table.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dimnames.data.table.html</loc>
-  </url>
-  <url>
-    <loc>/reference/generate_input.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_model_dimensions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/grapes-diag-grapes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/initialize_variable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/melt_variable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/predict_convergence_eta.html</loc>
-  </url>
-  <url>
-    <loc>/reference/process_results.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_equilibrium.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_expenditure_chkw_2022.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_expenditure_cp_2015.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_input_cost_chkw_2022.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_input_cost_cp_2015.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_price_index_chkw_2022.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_price_index_cp_2015.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_trade_share_chkw_2022.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_trade_share_cp_2015.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_transfer_chkw_2022.html</loc>
-  </url>
-  <url>
-    <loc>/reference/vector_to_array.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/KITE-package.html</loc></url>
+<url><loc>/reference/KITE.html</loc></url>
+<url><loc>/reference/array_sum.html</loc></url>
+<url><loc>/reference/array_sweep.html</loc></url>
+<url><loc>/reference/caliendo_parro_2015.html</loc></url>
+<url><loc>/reference/cast_variable.html</loc></url>
+<url><loc>/reference/check_convergence.html</loc></url>
+<url><loc>/reference/chowdhry_hinz_kamin_wanner_2022.html</loc></url>
+<url><loc>/reference/dt_array_dim.html</loc></url>
+<url><loc>/reference/dt_array_dimnames.html</loc></url>
+<url><loc>/reference/format_time_diff.html</loc></url>
+<url><loc>/reference/generate_input.html</loc></url>
+<url><loc>/reference/get_model_dimensions.html</loc></url>
+<url><loc>/reference/grapes-diag-grapes.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/initialize_variable.html</loc></url>
+<url><loc>/reference/melt_variable.html</loc></url>
+<url><loc>/reference/nest_elasticity_variables.html</loc></url>
+<url><loc>/reference/output_variables.html</loc></url>
+<url><loc>/reference/predict_convergence_eta.html</loc></url>
+<url><loc>/reference/process_results.html</loc></url>
+<url><loc>/reference/update_equilibrium.html</loc></url>
+<url><loc>/reference/update_expenditure_chkw_2022.html</loc></url>
+<url><loc>/reference/update_expenditure_cp_2015.html</loc></url>
+<url><loc>/reference/update_input_cost_chkw_2022.html</loc></url>
+<url><loc>/reference/update_input_cost_cp_2015.html</loc></url>
+<url><loc>/reference/update_output_income_cp_2015.html</loc></url>
+<url><loc>/reference/update_price_index_chkw_2022.html</loc></url>
+<url><loc>/reference/update_price_index_cp_2015.html</loc></url>
+<url><loc>/reference/update_trade_balance.html</loc></url>
+<url><loc>/reference/update_trade_share_chkw_2022.html</loc></url>
+<url><loc>/reference/update_trade_share_cp_2015.html</loc></url>
+<url><loc>/reference/update_transfer_chkw_2022.html</loc></url>
+<url><loc>/reference/vector_to_array.html</loc></url>
 </urlset>
+
