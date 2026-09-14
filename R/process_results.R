@@ -61,6 +61,15 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   model_scenario = lapply(results[['model_scenario']], cast_variable)
   output = lapply(results[['output']], cast_variable)
 
+  population_change = NULL
+  if (model == "caliendo_parro_2015") {
+    population_change = model_scenario[['population_change']]
+    if (is.null(population_change)) population_change = initial_conditions[['population_change']]
+  }
+  if (is.null(population_change)) {
+    population_change = initialize_variable(settings[['model_dimensions']][c("country")], value = 1)
+  }
+
   # create input share arrays ----
   initial_conditions[['input_share']] = initial_conditions[['intermediate_share']]
   for (c in settings[['model_dimensions']]$destination) {
@@ -180,6 +189,9 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   for (c in settings[['model_dimensions']]$country)  output[['tariff_revenue_new']][[c]] =
     sum(((model_scenario[['tariff_new']][,c,] - 1) * output[['trade_share_new']][,c,] / model_scenario[['tariff_new']][,c,]) %*% output[['expenditure_new']][c,])
 
+  output[['tariff_revenue_change']] = output[['tariff_revenue_new']] / output[['tariff_revenue']]
+  output[['tariff_revenue_change']][is.nan(output[['tariff_revenue_change']])] = 1
+
   # compute export subsidy costs ----
   output[['export_subsidy_costs']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country) output[['export_subsidy_costs']][[c]] =
@@ -197,9 +209,17 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   for (c in settings[['model_dimensions']]$country) output[['income']][[c]] =
     initial_conditions[['value_added']][c] + output[['tariff_revenue']][c] + output[['export_subsidy_costs']][c] - initial_conditions[['trade_balance']][c]
 
-  output[['income_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
-  for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
-    initial_conditions[['value_added']][c] * output[['wage_change']][c] + output[['tariff_revenue_new']][c] + output[['export_subsidy_costs_new']][c] - model_scenario[['trade_balance_new']][c]
+  labour_income_new = output[['wage_change']] * initial_conditions[['value_added']] * population_change
+  if (is.null(output[['value_added_new']])) output[['value_added_new']] = labour_income_new
+
+  solved_trade_balance = output[['trade_balance_new']]
+  if (is.null(solved_trade_balance)) solved_trade_balance = model_scenario[['trade_balance_new']]
+
+  if (is.null(output[['income_new']])) {
+    output[['income_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
+    for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
+      labour_income_new[c] + output[['tariff_revenue_new']][c] + output[['export_subsidy_costs_new']][c] - solved_trade_balance[c]
+  }
 
   output[['income_change']] = output[['income_new']] / output[['income']]
 
@@ -212,7 +232,10 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   for (c in settings[['model_dimensions']]$country) output[['production_new']][c,] =
     t(output[['expenditure_new']]) %diag% (output[['trade_share_new']][c,,] / (model_scenario[['tariff_new']][c,,] * model_scenario[['export_subsidy_new']][c,,]))
 
+  no_baseline_production = !is.finite(output[['production']]) |
+    abs(output[['production']]) < .Machine$double.eps
   output[['production_change']] = output[['production_new']] / output[['production']]
+  output[['production_change']][no_baseline_production] = 1
 
   output[['production_total']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country) output[['production_total']][[c]] = sum(output[['production']][c,])
@@ -224,12 +247,10 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
 
   output[['production_real_new']] = output[['production_new']] / output[['price_change']]
   output[['production_real_change']] = output[['production_real_new']] / output[['production']]
+  output[['production_real_change']][no_baseline_production] = 1
 
   output[['production_total_real_new']] = output[['production_total_new']] / output[['price_index_change']]
   output[['production_total_real_change']] = output[['production_total_real_new']] / output[['production_total']]
-
-  # compute value added prime & hat ----
-  output[['value_added_new']] = output[['wage_change']] * initial_conditions[['value_added']]
 
   # compute wage ----
   output[['wage_change_real']] = initialize_variable(settings[['model_dimensions']][c("country")])
@@ -237,7 +258,7 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
     exp(sum(initial_conditions[['consumption_share']][c,] * log(output[['wage_change']][c] / output[['price_index_change']][c])))
 
   # compute welfare ----
-  output[['welfare_change']] = output[['income_change']] / output[['price_index_change']]
+  output[['welfare_change']] = output[['income_change']] / output[['price_index_change']] / population_change
 
   # melt output ----
   output = lapply(output, melt_variable)

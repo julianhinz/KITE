@@ -14,7 +14,9 @@
 #' @param model Model specification to run, e.g. caliendo_parro_2015()
 #' @param initial_conditions List of initial conditions.
 #' @param model_scenario List of counterfactual conditions
-#' @param settings List of settings
+#' @param settings List of settings. `elasticity_convention` may be `"auto"`
+#'   (the default, which converts legacy inverse/sign conventions with a
+#'   warning), `"silent"`, or `"strict"`.
 #'
 #' @import cli
 #' @import data.table
@@ -43,10 +45,29 @@ update_equilibrium = function (model = NULL,
   if (is.null(settings[['tolerance']])) settings[['tolerance']] = 1e-4
   if (is.null(settings[['vfactor']])) settings[['vfactor']] = 0.1
   if (is.null(settings[['verbose']])) settings[['verbose']] = 1L
+  if (is.null(settings[['require_inner_convergence']])) settings[['require_inner_convergence']] = TRUE
+  if (is.null(settings[['elasticity_convention']])) settings[['elasticity_convention']] = "auto"
 
   # move elasticity variables into nested list if provided at top-level
   initial_conditions <- nest_elasticity_variables(initial_conditions)
   model_scenario <- nest_elasticity_variables(model_scenario)
+
+  if (!is.null(initial_conditions[['elasticities']][['trade_elasticity']])) {
+    initial_conditions[['elasticities']][['trade_elasticity']] =
+      normalize_trade_elasticity(
+        initial_conditions[['elasticities']][['trade_elasticity']],
+        settings[['elasticity_convention']],
+        "initial_conditions"
+      )
+  }
+  if (!is.null(model_scenario[['elasticities']][['trade_elasticity']])) {
+    model_scenario[['elasticities']][['trade_elasticity']] =
+      normalize_trade_elasticity(
+        model_scenario[['elasticities']][['trade_elasticity']],
+        settings[['elasticity_convention']],
+        "model_scenario"
+      )
+  }
 
   # initializing variables ----
   if (settings[['verbose']] >= 1L) cli_h1("Initializing variables")
@@ -85,7 +106,9 @@ update_equilibrium = function (model = NULL,
   if (settings[['verbose']] >= 1L) cli_h1("Reshaping and returning results")
 
   # melt outcomes into data.table
-  output = lapply(raw_output, melt_variable)
+  output_payload = raw_output
+  output_payload[['inner_converged']] = NULL
+  output = lapply(output_payload, melt_variable)
 
   # convergence metadata (available for all models, detailed fields optional)
   extract_scalar = function(x) {
@@ -100,13 +123,33 @@ update_equilibrium = function (model = NULL,
   }
   elapsed_seconds = as.numeric(difftime(Sys.time(), timer_start, units = "secs"))
 
-  # Convergence is TRUE only when the model returned a finite criterion below
-  # tolerance. Without a finite criterion we can't claim convergence, so we
-  # report NA rather than silently saying TRUE.
+  metadata_fields = c("criterion", "iterations", "n_iterations", "inner_converged")
+  economic_output = raw_output[setdiff(names(raw_output), metadata_fields)]
+  output_finite = all(vapply(economic_output, function(v) {
+    if (data.table::is.data.table(v) && "value" %in% names(v)) {
+      return(all(is.finite(v[['value']])))
+    }
+    if (is.numeric(v)) return(all(is.finite(v)))
+    TRUE
+  }, logical(1)))
+
+  # Claim convergence only when the outer criterion establishes it. Preserve
+  # NA when that cannot be established, reject a required failed/unknown inner
+  # solve, and always reject non-finite economic output.
   convergence = NA
   if (is.finite(criterion) && !is.null(settings[['tolerance']])) {
     convergence = criterion <= settings[['tolerance']]
   }
+  if (isTRUE(settings[['require_inner_convergence']])) {
+    inner_converged = raw_output[['inner_converged']]
+    if (is.null(inner_converged)) inner_converged = attr(raw_output, "inner_converged")
+    if (identical(inner_converged, FALSE)) {
+      convergence = FALSE
+    } else if (!isTRUE(inner_converged) && isTRUE(convergence)) {
+      convergence = NA
+    }
+  }
+  if (!output_finite) convergence = FALSE
 
   # return results
   if (settings[['verbose']] >= 1L) cli_alert_success("Reshaping and returning results.")

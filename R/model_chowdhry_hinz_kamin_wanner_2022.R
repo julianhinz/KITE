@@ -168,7 +168,8 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
                                                input[['trade_balance']],
                                                input[['price_change']],
                                                input[['coalition_member']],
-                                               settings[['model_dimensions']])
+                                               settings[['model_dimensions']],
+                                               trade_balance_new = input[['trade_balance_new']])
     if (settings[['verbose']] >= 2L) cat(" \u2713\n")
 
     # update trade flows ----
@@ -209,16 +210,18 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
   # return
   input[['criterion']] = criterion
   input[['iterations']] = h - 1
-  output_variables(input, c(c("wage_change",
-                              "input_cost_change",
-                              "price_change",
-                              "trade_share_new",
-                              "expenditure_new",
-                              "transfer",
-                              "trade_balance_new",
-                              "criterion",
-                              "iterations"),
-                            settings[["additional_output_variables"]]))
+  result = output_variables(input, c(c("wage_change",
+                                       "input_cost_change",
+                                       "price_change",
+                                       "trade_share_new",
+                                       "expenditure_new",
+                                       "transfer",
+                                       "trade_balance_new",
+                                       "criterion",
+                                       "iterations"),
+                                     settings[["additional_output_variables"]]))
+  attr(result, "inner_converged") = inner_converged
+  result
 
 }
 
@@ -262,7 +265,7 @@ update_input_cost_chkw_2022 = function (input_cost_change,
 #' @param trade_share Array of initial trade flows, dimensions: origin x destination x sector.
 #' @param trade_cost_change Array of change in trade costs, dimensions: origin x destination x sector.
 #' @param input_cost_change Matrix of input cost changes, dimensions: sector x country.
-#' @param trade_elasticity Vector of trade elasticities, dimensions: sector.
+#' @param trade_elasticity Positive Frechet trade elasticity theta, dimensions: sector.
 #' @param model_dimensions List of model dimensions.
 #'
 
@@ -273,7 +276,7 @@ update_price_index_chkw_2022 = function (price_change,
                                          trade_elasticity,
                                          model_dimensions) {
 
-  for (s in model_dimensions[['sector']]) price_change[s,] = ((t(trade_share[,,s]) * (t(trade_cost_change[,,s])^(-1/trade_elasticity[s]))) %*% (input_cost_change[s,]^(-1/trade_elasticity[s])))^(-trade_elasticity[s])
+  for (s in model_dimensions[['sector']]) price_change[s,] = ((t(trade_share[,,s]) * (t(trade_cost_change[,,s])^(-trade_elasticity[s]))) %*% (input_cost_change[s,]^(-trade_elasticity[s])))^(-1/trade_elasticity[s])
 
   # correct for zeros (i.e. prices for non-traded)
   for (s in model_dimensions[['sector']]) price_change[s,][price_change[s,] == 0] = 1
@@ -293,7 +296,7 @@ update_price_index_chkw_2022 = function (price_change,
 #' @param trade_cost_change Array of change in trade costs, dimensions: origin x destination x sector.
 #' @param input_cost_change Matrix of input cost changes, dimensions: sector x country.
 #' @param price_change Matrix of price index changes, dimensions: sector x country.
-#' @param trade_elasticity Vector of trade elasticities, dimension: sector.
+#' @param trade_elasticity Positive Frechet trade elasticity theta, dimension: sector.
 #' @param model_dimensions List of model dimensions.
 #'
 
@@ -305,7 +308,7 @@ update_trade_share_chkw_2022 = function (trade_share,
                                          model_dimensions) {
 
   trade_share_new = trade_share
-  for (s in model_dimensions[['sector']]) trade_share_new[,,s] = t(t(trade_cost_change[,,s] * input_cost_change[s,]) / price_change[s,])^(-1/trade_elasticity[s]) * trade_share[,,s]
+  for (s in model_dimensions[['sector']]) trade_share_new[,,s] = t(t(trade_cost_change[,,s] * input_cost_change[s,]) / price_change[s,])^(-trade_elasticity[s]) * trade_share[,,s]
 
   return (trade_share_new)
 
@@ -403,6 +406,7 @@ update_expenditure_chkw_2022 = function (expenditure_new,
 #' @param value_added Matrix of value added, dimension: country.
 #' @param wage_change Vector of change in wages, dimension: country.
 #' @param trade_balance Vector of aggregate trade balance, dimension: country.
+#' @param trade_balance_new Vector of counterfactual aggregate trade balance, dimension: country.
 #' @param price_change Matrix of price index changes, dimensions: sector x country.
 #' @param coalition_member Vector of country codes with coalition members, dimension: country.
 #' @param model_dimensions List of model dimensions.
@@ -426,7 +430,8 @@ update_transfer_chkw_2022 = function (transfer,
                                       trade_balance,
                                       price_change,
                                       coalition_member,
-                                      model_dimensions) {
+                                      model_dimensions,
+                                      trade_balance_new = trade_balance) {
 
   # Accept both explicit coalition country lists and 0/1 indicator vectors.
   coalition_countries = coalition_member
@@ -456,7 +461,7 @@ update_transfer_chkw_2022 = function (transfer,
       sum(((tariff_new[,c,] - 1) * trade_share_new[,c,] / tariff_new[,c,]) %*% expenditure_new[,c]) # new tariff revenue
       + sum(expenditure_new %diag% ((export_subsidy_new[c,,] - 1) * trade_share_new[c,,] / (tariff_new[c,,] * export_subsidy_new[c,,]))) # new export subsidy costs
       + wage_change[c] * value_added[c] # new value added
-      - trade_balance[c] # trade balance
+      - trade_balance_new[c] # counterfactual trade balance
     )
     income_old[c] = (
       sum(((tariff[,c,] - 1) * trade_share[,c,] / tariff[,c,]) %*% expenditure[,c]) # old tariff revenue

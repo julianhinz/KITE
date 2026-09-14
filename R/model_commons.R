@@ -47,7 +47,9 @@ update_trade_balance = function (trade_balance,
 
                              "zero" = {
                                # Set all trade balances to zero
-                               rep(0, length(trade_balance))
+                               trade_balance_zero = copy(trade_balance)
+                               trade_balance_zero[] = 0
+                               trade_balance_zero
                              },
 
                              stop("Invalid trade_balance_rule specified. Choose 'fixed', 'fixed_country_share', 'fixed_global_share', or 'zero'.")

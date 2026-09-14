@@ -6,6 +6,12 @@ Public release. Merges release/26.05 into main.
   in `DESCRIPTION`. Alternative or commercial licensing terms remain
   available on request from `KITE@kielinstitut.de`.
 - Rewritten README.
+- Standardizes `trade_elasticity` as the positive Fréchet parameter theta;
+  legacy inverse and sign conventions are converted with a warning.
+- Fixes solved trade-balance and population accounting in processed income and
+  welfare, CHKW coalition transfers, convergence metadata, tariff-revenue and
+  zero-production change fields, deterministic dimension ordering, and the
+  CP2015 active-IO convergence criterion near autarky.
 
 # KITE 26.05 — Balmy Cumbuco
 

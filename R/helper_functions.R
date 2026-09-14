@@ -33,9 +33,15 @@ cast_variable = function(
   # 1) data.table → cast to array
   if (data.table::is.data.table(x)) {
     value <- NULL
+    x <- data.table::copy(x)
     keep <- if (is.null(variable_order)) character(0) else intersect(variable_order, names(x))
     # Put requested variables first, then the rest
     x <- x[, c(keep, setdiff(names(x), keep)), with = FALSE]
+    index_columns <- names(x)[-length(names(x))]
+    factor_columns <- index_columns[vapply(x[, index_columns, with = FALSE], is.factor, logical(1))]
+    for (column in factor_columns) {
+      data.table::set(x, j = column, value = as.character(x[[column]]))
+    }
     # Reverse sort by all index columns except the last (= value column) for correct array layout
     data.table::setorderv(x, rev(names(x)[-length(names(x) )]))
     return(array(
@@ -45,19 +51,7 @@ cast_variable = function(
     ))
   }
 
-  # 2) Character vectors → reorder by variable_order without dropping others
-  if (is.character(x) && length(x) > 1) {
-    if (!is.null(variable_order)) {
-      idx <- match(x, variable_order)                    # position in variable_order or NA
-      ord <- order(is.na(idx), idx, x)                   # matched first (their order), then unmatched (alphabetical)
-      x <- x[ord]
-    } else {
-      x <- x[order(x)]
-    }
-    return(x)
-  }
-
-  # 3) Plain lists → recurse (preserves any inner atomic vectors)
+  # 2) Plain lists → recurse (preserves any inner atomic vectors)
   if (is.list(x) && !is.data.frame(x)) {
     nms <- names(x)
     res <- lapply(x, function(el) cast_variable(el, variable_order))
@@ -65,7 +59,7 @@ cast_variable = function(
     return(res)
   }
 
-  # 4) Anything else → return as-is
+  # 3) Anything else → return as-is
   x
 }
 
@@ -121,6 +115,13 @@ get_model_dimensions <- function (x) {
   x = lapply(x, unique)
   x = x[names(x) != "value"]
   x = x[!duplicated(names(x))]
+  x = lapply(x, function(v) {
+    if (is.factor(v)) v = as.character(v)
+    if (is.character(v) || is.numeric(v) || is.integer(v)) {
+      v = sort(v, method = "radix")
+    }
+    v
+  })
   x
 }
 
@@ -145,6 +146,67 @@ nest_elasticity_variables <- function(x) {
     }
   }
 
+  x
+}
+
+# Normalize legacy trade-elasticity conventions to the standard positive
+# Frechet parameter theta. KITE releases before 26.09 accepted inverse and
+# sign-flipped values, so automatic conversion warns instead of silently
+# changing the economics of existing inputs.
+normalize_trade_elasticity = function (x,
+                                       convention = "auto",
+                                       context = "initial_conditions") {
+  if (is.null(x)) return(x)
+  if (!is.character(convention) || length(convention) != 1 ||
+      !convention %in% c("auto", "silent", "strict")) {
+    cli_abort("settings$elasticity_convention must be one of {.val auto}, {.val silent}, {.val strict}.")
+  }
+
+  v = if (is.data.frame(x)) x[['value']] else as.numeric(x)
+  if (length(v) == 0) return(x)
+  if (any(!is.finite(v))) cli_abort("trade_elasticity in {context} contains non-finite values.")
+  if (any(v == 0)) cli_abort("trade_elasticity in {context} contains zeros.")
+  if (any(v > 0) && any(v < 0)) {
+    cli_abort(c(
+      "trade_elasticity in {context} mixes positive and negative values; cannot infer the convention.",
+      "i" = "Provide the standard positive Frechet/trade elasticity theta (e.g. 4)."
+    ))
+  }
+
+  if (all(v > 0) && all(v < 1)) {
+    legacy = "1/theta"
+    v_new = 1 / v
+  } else if (all(v < 0) && any(abs(v) >= 1)) {
+    legacy = "-theta"
+    v_new = -v
+  } else if (all(v < 0)) {
+    legacy = "-1/theta"
+    v_new = -1 / v
+  } else {
+    return(x)
+  }
+
+  if (convention == "strict") {
+    cli_abort(c(
+      "trade_elasticity in {context} looks like the legacy {.val {legacy}} convention.",
+      "i" = "KITE expects the standard positive trade elasticity theta (e.g. 4).",
+      "i" = "Convert your data, or use settings$elasticity_convention = \"auto\"."
+    ))
+  }
+  if (convention == "auto") {
+    cli_warn(c(
+      "!" = "trade_elasticity in {context} looks like the legacy {.val {legacy}} convention; values were converted to the standard positive theta automatically.",
+      "i" = "Value range before: [{signif(min(v), 3)}, {signif(max(v), 3)}]; after: [{signif(min(v_new), 3)}, {signif(max(v_new), 3)}].",
+      "i" = "Store positive theta directly, or set settings$elasticity_convention = \"silent\" to suppress this warning."
+    ), class = "kite_legacy_elasticity")
+  }
+
+  if (is.data.frame(x)) {
+    x = data.table::copy(x)
+    x[['value']] = v_new
+  } else {
+    x[] = v_new
+  }
   x
 }
 

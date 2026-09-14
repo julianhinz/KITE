@@ -89,6 +89,7 @@ caliendo_parro_2015 = function (input, settings) {
   change_list <- as.matrix(t(c(as.numeric(Sys.time()),0)))
   
   inner_converged_flag = TRUE
+  active_io = any(is.finite(input[['factor_share']]) & input[['factor_share']] < 1)
 
   criterion = 1
   h = 1
@@ -99,6 +100,7 @@ caliendo_parro_2015 = function (input, settings) {
     if (settings[['verbose']] >= 2L) cat(format(Sys.time()), ":", "Iteration", h, "\n")
 
     input[['wage_change0']] = input[['wage_change']]
+    input[['price_change0']] = input[['price_change']]
 
     # update input cost ----
     if (settings[['verbose']] >= 2L) cat("\r \u2014 Input update")
@@ -175,7 +177,13 @@ caliendo_parro_2015 = function (input, settings) {
                                                         settings[['trade_balance_rule']])
 
     # prepare next iteration ----
-    criterion = check_convergence(input[['wage_change']], input[['wage_change0']], method = settings[['convergence_method']])
+    criterion_wage = check_convergence(input[['wage_change']], input[['wage_change0']], method = settings[['convergence_method']])
+    if (active_io) {
+      criterion_price = check_convergence(input[['price_change']], input[['price_change0']], method = settings[['convergence_method']])
+      criterion = max(criterion_wage, criterion_price)
+    } else {
+      criterion = criterion_wage
+    }
     change_list <- rbind(change_list, as.matrix(t(c(as.numeric(Sys.time()), criterion))))
 
     if (settings[['verbose']] == 1L) cli_status_update(id = status1, "{symbol[['arrow_right']]} Currently in iteration {h}.")
@@ -191,16 +199,18 @@ caliendo_parro_2015 = function (input, settings) {
   input[['iterations']] = h - 1
 
   # return
-  output_variables(input, c(c("wage_change",
-                              "input_cost_change",
-                              "price_change",
-                              "trade_share_new",
-                              "expenditure_new",
-                              "value_added_new",
-                              "trade_balance_new",
-                              "criterion",
-                              "iterations"),
-                            settings[["additional_output_variables"]]))
+  result = output_variables(input, c(c("wage_change",
+                                       "input_cost_change",
+                                       "price_change",
+                                       "trade_share_new",
+                                       "expenditure_new",
+                                       "value_added_new",
+                                       "trade_balance_new",
+                                       "criterion",
+                                       "iterations"),
+                                     settings[["additional_output_variables"]]))
+  attr(result, "inner_converged") = inner_converged_flag
+  result
 }
 
 
@@ -245,7 +255,7 @@ update_input_cost_cp_2015 = function (input_cost_change,
 #' @param trade_share Array of initial trade flows, dimensions: origin x destination x sector.
 #' @param trade_cost_change Array of change in trade costs, dimensions: origin x destination x sector.
 #' @param input_cost_change Matrix of input cost changes, dimensions: sector x country.
-#' @param trade_elasticity Vector of trade elasticities, dimensions: sector.
+#' @param trade_elasticity Positive Frechet trade elasticity theta, dimensions: sector.
 #' @param model_dimensions List of model dimensions.
 #'
 
@@ -256,7 +266,7 @@ update_price_index_cp_2015 = function (price_change,
                                        trade_elasticity,
                                        model_dimensions) {
 
-  for (s in model_dimensions[['sector']]) price_change[,s] = ((t(trade_share[,,s]) * (t(trade_cost_change[,,s])^(-1/trade_elasticity[s]))) %*% (input_cost_change[,s]^(-1/trade_elasticity[s])))^(-trade_elasticity[s])
+  for (s in model_dimensions[['sector']]) price_change[,s] = ((t(trade_share[,,s]) * (t(trade_cost_change[,,s])^(-trade_elasticity[s]))) %*% (input_cost_change[,s]^(-trade_elasticity[s])))^(-1/trade_elasticity[s])
 
   # correct for zeros (i.e. prices for non-traded)
   for (s in model_dimensions[['sector']]) price_change[,s][price_change[,s] == 0] = 1
@@ -276,7 +286,7 @@ update_price_index_cp_2015 = function (price_change,
 #' @param trade_cost_change Array of change in trade costs, dimensions: origin x destination x sector.
 #' @param input_cost_change Matrix of input cost changes, dimensions: sector x country.
 #' @param price_change Matrix of price index changes, dimensions: sector x country.
-#' @param trade_elasticity Vector of trade elasticities, dimension: sector.
+#' @param trade_elasticity Positive Frechet trade elasticity theta, dimension: sector.
 #' @param model_dimensions List of model dimensions.
 #'
 
@@ -288,7 +298,7 @@ update_trade_share_cp_2015 = function (trade_share,
                                        model_dimensions) {
 
   trade_share_new = trade_share
-  for (s in model_dimensions[['sector']]) trade_share_new[,,s] = t(t(trade_cost_change[,,s] * input_cost_change[,s]) / price_change[,s])^(-1/trade_elasticity[s]) * trade_share[,,s]
+  for (s in model_dimensions[['sector']]) trade_share_new[,,s] = t(t(trade_cost_change[,,s] * input_cost_change[,s]) / price_change[,s])^(-trade_elasticity[s]) * trade_share[,,s]
 
   return (trade_share_new)
 

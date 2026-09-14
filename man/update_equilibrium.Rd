@@ -18,7 +18,9 @@ update_equilibrium(
 
 \item{model_scenario}{List of counterfactual conditions}
 
-\item{settings}{List of settings}
+\item{settings}{List of settings. `elasticity_convention` may be `"auto"`
+(the default, which converts legacy inverse/sign conventions with a
+warning), `"silent"`, or `"strict"`.}
 }
 \value{
 An S3-classed `kite_result` (also inheriting the model class, e.g.

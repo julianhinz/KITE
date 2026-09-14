@@ -22,7 +22,7 @@ update_trade_share_chkw_2022(
 
 \item{price_change}{Matrix of price index changes, dimensions: sector x country.}
 
-\item{trade_elasticity}{Vector of trade elasticities, dimension: sector.}
+\item{trade_elasticity}{Positive Frechet trade elasticity theta, dimension: sector.}
 
 \item{model_dimensions}{List of model dimensions.}
 }
