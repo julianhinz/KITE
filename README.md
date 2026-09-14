@@ -40,14 +40,16 @@ source(system.file("examples", "example.R", package = "KITE"))
 Expected output:
 
 ```
-CP2015 converged in 48 iterations (criterion = 9.523421e-05 ).
-CHKW2022 converged in 53 iterations (criterion = 9.778594e-05 ).
+CP2015 converged in 22 iterations (criterion = 9.757296e-05 ).
+CHKW2022 converged in 25 iterations (criterion = 8.269759e-05 ).
 ```
 
 The example builds initial conditions from scratch, defines a tariff
 scenario, calls `update_equilibrium()`, and summarises the result with
 `process_results()`. Open the file itself as a template for your own
-scenarios.
+scenarios. `trade_elasticity` uses the positive Fréchet parameter \(\theta\)
+(typically around 4–6); KITE detects older inverse or negative conventions and
+converts them with a warning.
 
 ## Models
 
