@@ -194,6 +194,11 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
     # compute adjusted wages ----
     input[['wage_change']] = pmax(input[['wage_change']] + settings[['vfactor']] * input[['excess']], .Machine$double.eps)
 
+    # normalize wage change: world value added stays at its baseline level, as
+    # in caliendo_parro_2015. The excess update alone keeps the wage level only
+    # while the world trade balance sums to zero.
+    input[['wage_change']] = input[['wage_change']] * sum(input[['value_added']]) / sum(input[['value_added_new']])
+
     # prepare next iteration ----
     criterion = check_convergence(input[['wage_change']], input[['wage_change0']], method = settings[['convergence_method']])
     change_list <- rbind(change_list, as.matrix(t(c(as.numeric(Sys.time()), criterion))))
