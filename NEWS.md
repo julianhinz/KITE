@@ -22,6 +22,14 @@ subsidies are bit-identical to 26.09.
   `caliendo_parro_2015` does. This changes `value_added_new` and, under the
   `fixed_country_share` and `fixed_global_share` trade-balance rules, the
   equilibrium, whenever export subsidies differ from one.
+- **No placeholder outputs from CHKW.** *Behaviour change:* the
+  `chowdhry_hinz_kamin_wanner_2022` solver no longer returns `income_new`,
+  `income_old` or `price_index_change`, also when
+  `additional_output_variables` requests them. The solver holds only work
+  values for these (zeros, and ones for `price_index_change`). A requested
+  `income_new` replaced the processed income, so `income_change` and
+  `welfare_change` were 0 for every country. `process_results()` now always
+  computes `income_new` and `price_index_change` from the solution.
 
 # KITE 26.09
 

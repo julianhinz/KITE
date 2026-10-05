@@ -210,6 +210,13 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
   # return
   input[['criterion']] = criterion
   input[['iterations']] = h - 1
+  # income_new and income_old are zero work vectors (update_transfer_chkw_2022()
+  # fills local copies only) and price_index_change keeps its initial ones.
+  # Never return them: a requested zero income_new replaced the processed
+  # income. process_results() computes all three from the solution.
+  input[['income_new']] = NULL
+  input[['income_old']] = NULL
+  input[['price_index_change']] = NULL
   result = output_variables(input, c(c("wage_change",
                                        "input_cost_change",
                                        "price_change",
