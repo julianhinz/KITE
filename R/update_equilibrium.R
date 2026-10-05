@@ -4,7 +4,8 @@
 #' `update_equilibrium()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
 #'
 #' @return An S3-classed `kite_result` (also inheriting the model class, e.g.
-#'   `caliendo_parro_2015` or `chowdhry_hinz_kamin_wanner_2022`) with elements:
+#'   `caliendo_parro_2015`, `chowdhry_hinz_kamin_wanner_2022` or
+#'   `mahlkow_wanner_2021`) with elements:
 #'   `model` (character id), `model_function` (the model function used),
 #'   `initial_conditions`, `model_scenario`, `output` (named list of result
 #'   tables produced by the model), `settings`, and an `info` block with
@@ -83,7 +84,8 @@ update_equilibrium = function (model = NULL,
 
   # resolve canonical model id for result classing and dispatch
   resolve_model_id = function(model, model_expr) {
-    known_models = c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022")
+    known_models = c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022",
+                     "mahlkow_wanner_2021")
 
     for (nm in known_models) {
       if (exists(nm, mode = "function", inherits = TRUE) &&
