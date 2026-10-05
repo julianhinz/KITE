@@ -440,10 +440,17 @@ update_expenditure_cp_2015 = function (expenditure_new,
     exp0 = expenditure_new
 
     for (c in model_dimensions[['destination']]) {
-      expenditure_new[c,] = input_share[c,,] %*% (t(expenditure_new) %diag% (trade_share_new[c,,] / (tariff_new[c,,] * export_subsidy_new[c,,]))) + # input
+      # slices as matrices, so that one-sector models keep their dimensions
+      input_share_c = slice_matrix(input_share, c)
+      trade_share_out = slice_matrix(trade_share_new, c)
+      trade_share_in = slice_matrix(trade_share_new, c, 2)
+      tariff_out = slice_matrix(tariff_new, c)
+      tariff_in = slice_matrix(tariff_new, c, 2)
+      export_subsidy_out = slice_matrix(export_subsidy_new, c)
+      expenditure_new[c,] = input_share_c %*% (t(expenditure_new) %diag% (trade_share_out / (tariff_out * export_subsidy_out))) + # input
         consumption_share[c,] * (
-          sum(((tariff_new[,c,] - 1) * trade_share_new[,c,] / tariff_new[,c,]) %*% expenditure_new[c,]) # new tariff revenue
-          + sum(t(expenditure_new) %diag% ((export_subsidy_new[c,,] - 1) * trade_share_new[c,,] / (tariff_new[c,,] * export_subsidy_new[c,,]))) # new export subsidy costs
+          sum(((tariff_in - 1) * trade_share_in / tariff_in) %*% expenditure_new[c,]) # new tariff revenue
+          + sum(t(expenditure_new) %diag% ((export_subsidy_out - 1) * trade_share_out / (tariff_out * export_subsidy_out))) # new export subsidy costs
           + wage_change[c] * value_added[c] # new value added
           - trade_balance_new[c] # trade balance
         )

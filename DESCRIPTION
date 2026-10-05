@@ -1,7 +1,7 @@
 Package: KITE
 Title: KITE Model Suite
-Version: 26.09
-Date: 2026-09-07
+Version: 26.10
+Date: 2026-10-05
 Authors@R: c(
     person("Julian", "Hinz", role = c("cre","aut"),
            email = "julian.hinz@kielinstitut.de"),

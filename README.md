@@ -1,6 +1,6 @@
 # KITE <img src="man/figures/logo_kite.png" align="right" width="140" alt="KITE logo" />
 
-[![Version](https://img.shields.io/badge/version-26.09-blue)](NEWS.md)
+[![Version](https://img.shields.io/badge/version-26.10-blue)](NEWS.md)
 [![License: GPL-3](https://img.shields.io/badge/license-GPL--3-blue)](LICENSE)
 [![R >= 3.5.0](https://img.shields.io/badge/R-%3E%3D%203.5.0-276DC3)](https://www.r-project.org/)
 
