@@ -132,6 +132,8 @@ generate_input = function (initial_conditions, model_scenario, settings) {
 #' @param x List of data.tables of initial conditions
 #'
 get_model_dimensions <- function (x) {
+  # plain vectors (e.g. scalar policy settings) carry no dimensions
+  x = x[!vapply(x, is.atomic, logical(1))]
   names(x) = NULL
   x = lapply(x, c)
   x = unlist(x, recursive = F)
