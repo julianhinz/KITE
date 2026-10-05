@@ -198,6 +198,11 @@ caliendo_parro_2015 = function (input, settings) {
   input[['criterion']] = criterion
   input[['iterations']] = h - 1
 
+  # income and output are per country, but the trade-flow sums that compute
+  # them keep the destination and origin dimension names; name them country
+  for (v in c("income", "income_new")) names(dimnames(input[[v]])) = "country"
+  for (v in c("output", "output_new")) names(dimnames(input[[v]]))[1] = "country"
+
   # return
   result = output_variables(input, c(c("wage_change",
                                        "input_cost_change",
