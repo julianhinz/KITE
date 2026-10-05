@@ -206,6 +206,12 @@ warn_unknown_scenario_variables = function (model_id, model_scenario) {
   if (length(unknown) == 0L) return(invisible(NULL))
 
   hints = vapply(unknown, function (v) {
+    # a scenario trade_balance replaces the baseline balance; the
+    # counterfactual balance is not an input, so do not point to it
+    if (v == "trade_balance_new") {
+      return(paste0("`trade_balance_new`: not a scenario variable; the counterfactual ",
+                    "trade balance follows `settings$trade_balance_rule`."))
+    }
     base = sub("_(new|change)$", "", v)
     candidates = if (grepl("_change$", v)) paste0(base, c("_new", "")) else base
     candidates = candidates[candidates != v & candidates %in% known]
@@ -223,6 +229,7 @@ warn_unknown_scenario_variables = function (model_id, model_scenario) {
     if (length(unknown) == 1L) "; it has no effect." else "; they have no effect.",
     paste0("\n* ", hints, collapse = "")
   )
+  # base warning() with a condition object: cli_warn() with class and fields needs rlang, which is not in Imports
   warning(structure(class = c("kite_unknown_scenario_variable", "warning", "condition"),
                     list(message = message, call = NULL,
                          model = model_id, variables = unknown)))

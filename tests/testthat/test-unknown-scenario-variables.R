@@ -74,6 +74,18 @@ test_that("a variable without a base name is reported as not a scenario variable
                fixed = TRUE)
 })
 
+test_that("trade_balance_new points to settings$trade_balance_rule, not trade_balance", {
+  ic <- make_fixture(seed = 406L)
+  for (model in c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022")) {
+    run <- catch_unknown(update_equilibrium(get(model), ic,
+                                            list(trade_balance_new = ic$trade_balance),
+                                            unknown_settings))
+    expect_identical(run$warning$variables, "trade_balance_new", info = model)
+    expect_match(conditionMessage(run$warning), "settings$trade_balance_rule", fixed = TRUE)
+    expect_no_match(conditionMessage(run$warning), "set `trade_balance` instead", fixed = TRUE)
+  }
+})
+
 test_that("variables that the models read do not warn", {
   ic <- make_fixture(seed = 404L, coalition_members = c("c1", "c3"))
   ones_cs <- copy(ic$value_added)[, value := 1]
