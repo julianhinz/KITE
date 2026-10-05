@@ -99,6 +99,9 @@ update_equilibrium = function (model = NULL,
 
   model_id = resolve_model_id(model, substitute(model))
 
+  # a scenario variable that the model does not read has no effect; say so
+  warn_unknown_scenario_variables(model_id, model_scenario)
+
   # run model ----
   raw_output = model(input, settings)
 
@@ -167,4 +170,68 @@ update_equilibrium = function (model = NULL,
 
   class(results) = c(model_id, "kite_result", "list")
   results
+}
+
+
+# Scenario variables that a model reads. Each solver reads these from its
+# input before it assigns them; process_results() reads no others from the
+# scenario. A solver computes `tariff_change` and `export_subsidy_change`
+# itself, so a scenario must set `tariff_new` and `export_subsidy_new`.
+# `ntb_change` is read when it is set. Elasticities are nested under
+# `elasticities` before the check. Returns NULL for a model outside the
+# package.
+kite_scenario_variables = function (model_id) {
+  common = c("trade_share", "intermediate_share", "factor_share",
+             "consumption_share", "value_added", "trade_balance",
+             "elasticities",
+             "tariff", "tariff_new",
+             "ntb", "ntb_new", "ntb_change",
+             "export_subsidy", "export_subsidy_new")
+  switch(model_id,
+         caliendo_parro_2015 = c(common, "expenditure",
+                                 "productivity_change", "population_change",
+                                 "global_value_added_change"),
+         chowdhry_hinz_kamin_wanner_2022 = c(common, "coalition_member"),
+         NULL)
+}
+
+# Warn (class `kite_unknown_scenario_variable`, fields `model` and
+# `variables`) when `model_scenario` sets a variable that the model does not
+# read. Such a variable has no effect on the run.
+warn_unknown_scenario_variables = function (model_id, model_scenario) {
+  if (!is.character(model_id) || length(model_id) != 1L || is.na(model_id)) return(invisible(NULL))
+  known = kite_scenario_variables(model_id)
+  if (is.null(known)) return(invisible(NULL))
+  unknown = setdiff(names(model_scenario), c(known, ""))
+  if (length(unknown) == 0L) return(invisible(NULL))
+
+  hints = vapply(unknown, function (v) {
+    # a scenario trade_balance replaces the baseline balance; the
+    # counterfactual balance is not an input, so do not point to it
+    if (v == "trade_balance_new") {
+      return(paste0("`trade_balance_new`: not a scenario variable; the counterfactual ",
+                    "trade balance follows `settings$trade_balance_rule`."))
+    }
+    base = sub("_(new|change)$", "", v)
+    candidates = if (grepl("_change$", v)) paste0(base, c("_new", "")) else base
+    candidates = candidates[candidates != v & candidates %in% known]
+    if (length(candidates) > 0L) {
+      sprintf("`%s`: set `%s` instead.", v, candidates[1])
+    } else {
+      sprintf("`%s`: not a scenario variable of this model.", v)
+    }
+  }, character(1))
+
+  message = paste0(
+    "Model \"", model_id, "\" does not use ",
+    if (length(unknown) == 1L) "the scenario variable " else "the scenario variables ",
+    paste0("`", unknown, "`", collapse = ", "),
+    if (length(unknown) == 1L) "; it has no effect." else "; they have no effect.",
+    paste0("\n* ", hints, collapse = "")
+  )
+  # base warning() with a condition object: cli_warn() with class and fields needs rlang, which is not in Imports
+  warning(structure(class = c("kite_unknown_scenario_variable", "warning", "condition"),
+                    list(message = message, call = NULL,
+                         model = model_id, variables = unknown)))
+  invisible(NULL)
 }

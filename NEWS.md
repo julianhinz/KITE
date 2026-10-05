@@ -1,8 +1,10 @@
 # KITE 26.10
 
 Bug fixes for `caliendo_parro_2015` and `chowdhry_hinz_kamin_wanner_2022`.
-Results of multi-sector runs without coalition transfers and without export
-subsidies are bit-identical to 26.09.
+Results of multi-sector `caliendo_parro_2015` runs without export subsidies
+are bit-identical to 26.09. Results of `chowdhry_hinz_kamin_wanner_2022` runs
+change through its new numeraire (see below); on baselines whose trade
+balances sum to zero they change only within solver tolerance.
 
 - **One-sector models now solve and process.** With a single sector, array
   slices dropped to vectors: `process_results()` failed for
@@ -22,6 +24,42 @@ subsidies are bit-identical to 26.09.
   `caliendo_parro_2015` does. This changes `value_added_new` and, under the
   `fixed_country_share` and `fixed_global_share` trade-balance rules, the
   equilibrium, whenever export subsidies differ from one.
+- **No placeholder outputs from CHKW.** *Behaviour change:* the
+  `chowdhry_hinz_kamin_wanner_2022` solver no longer returns `income_new`,
+  `income_old` or `price_index_change`, also when
+  `additional_output_variables` requests them. The solver holds only work
+  values for these (zeros, and ones for `price_index_change`). A requested
+  `income_new` replaced the processed income, so `income_change` and
+  `welfare_change` were 0 for every country. `process_results()` now always
+  computes `income_new` and `price_index_change` from the solution.
+- **Warning for scenario variables that a model does not use.**
+  *Behaviour change:* `update_equilibrium()` now warns when `model_scenario`
+  sets a variable that the model does not read. Before, such a variable had
+  no effect and no warning: for example, `coalition_member_new` for
+  `chowdhry_hinz_kamin_wanner_2022` gave zero coalition transfers. The
+  warning has class `kite_unknown_scenario_variable` and the fields `model`
+  and `variables`. It names the variable to set instead where one exists
+  (`coalition_member`). Both solvers compute `tariff_change` and
+  `export_subsidy_change` themselves, so these now warn and point to
+  `tariff_new` and `export_subsidy_new`. Model functions outside the package
+  are not checked. Results do not change.
+- **Numeraire for CHKW.** *Behaviour change:* `caliendo_parro_2015`
+  rescales the wage change in every iteration so that world value added
+  stays at its baseline level. `chowdhry_hinz_kamin_wanner_2022` had no
+  such rescale. Its excess-function wage update keeps the wage level only
+  while the world trade balance sums to zero. Under `fixed_country_share`
+  after a shock, and under any rule except `zero` on a baseline whose trade
+  balances do not sum to zero, the wage level drifted without bound or
+  collapsed, and the run did not converge. The solver now applies the
+  rescale of `caliendo_parro_2015` after its wage update, under every
+  `trade_balance_rule`. On baselines whose trade balances sum to zero,
+  results under `fixed`, `fixed_global_share` and `zero` change only within
+  solver tolerance (tolerance `1e-10`: wage changes by at most `5e-11`,
+  welfare changes by at most `4e-10`). `fixed_country_share` and
+  unbalanced-baseline runs change materially: they now converge, and
+  without a coalition they stay on the scale of `caliendo_parro_2015`. In
+  these runs the trade-balance rule cannot hold for the world as a whole, so
+  the two solvers stop at fixed points that differ slightly.
 
 # KITE 26.09
 
