@@ -34,7 +34,8 @@ make_mw_fixture <- function(n_countries = 3L, n_sectors = 2L, seed = 1L) {
 #' D = VA + tax revenue - I. An unchanged policy then leaves every change
 #' variable at one.
 make_mw_equilibrium_fixture <- function(n_countries = 3L, n_sectors = 3L,
-                                        seed = 1L, with_tax = FALSE) {
+                                        seed = 1L, with_tax = FALSE,
+                                        carbon_price = NULL) {
   ic <- make_mw_fixture(n_countries, n_sectors, seed)
   countries <- attr(ic, "countries")
   sectors <- attr(ic, "sectors")
@@ -54,6 +55,14 @@ make_mw_equilibrium_fixture <- function(n_countries = 3L, n_sectors = 3L,
   set.seed(seed + 2000L)
   tax <- matrix(1, n, S, dimnames = list(countries, sectors))
   if (with_tax) tax[] <- runif(n * S, 1, 1.3)
+  # baseline wedge of a carbon price on all use: 1 + carbon_price * intensity / price
+  if (!is.null(carbon_price)) {
+    price0 <- matrix(0, n, S, dimnames = list(countries, sectors))
+    price0[cbind(ic$price$country, ic$price$sector)] <- ic$price$value
+    intensity <- setNames(ic$carbon_intensity$value, ic$carbon_intensity$sector)[sectors]
+    tax <- 1 + carbon_price * sweep(1 / price0, 2, intensity, "*")
+    with_tax <- TRUE
+  }
   income <- setNames(runif(n, 100, 200), countries)
 
   X <- matrix(100, n, S, dimnames = list(countries, sectors))

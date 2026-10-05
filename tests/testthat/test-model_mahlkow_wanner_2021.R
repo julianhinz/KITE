@@ -24,6 +24,33 @@ carbon_scenario <- function(ic, carbon_tax = 2, club = c("c1", "c2"),
     list(...))
 }
 
+# arrays from long tables, independent of the package casting
+as_array <- function(dt, keys, levels) {
+  dt <- as.data.table(dt)
+  a <- array(NA_real_, lengths(levels[keys]), levels[keys])
+  a[as.matrix(dt[, keys, with = FALSE])] <- dt$value
+  a
+}
+
+# income and trade from raw solver outputs: tax-inclusive absorption X minus
+# intermediate purchases (1 - beta) Y is final demand, i.e. income
+independent_accounts <- function(res, ic) {
+  lv <- list(origin = attr(ic, "countries"), destination = attr(ic, "countries"),
+             country = attr(ic, "countries"), sector = attr(ic, "sectors"))
+  pi1 <- as_array(res$output$trade_share_new, c("origin", "destination", "sector"), lv)
+  tariff <- as_array(res$output$tariff_new, c("origin", "destination", "sector"), lv)
+  subsidy <- as_array(res$output$export_subsidy_new, c("origin", "destination", "sector"), lv)
+  X <- as_array(res$output$expenditure_new, c("country", "sector"), lv)
+  tax <- as_array(res$output$tax_new, c("country", "sector"), lv)
+  beta <- as_array(ic$factor_share, c("country", "sector"), lv)
+  flow <- sweep(pi1, 2:3, X / tax, "*")           # tariff-inclusive, net of tax
+  Y <- apply(flow / (tariff * subsidy), c(1, 3), sum)
+  list(income = rowSums(X) - rowSums((1 - beta) * Y),
+       tax_revenue = rowSums((tax - 1) / tax * X),
+       value_added = rowSums(beta * Y),
+       net_exports = apply(flow / tariff, 1, sum) - apply(flow / tariff, 2, sum))
+}
+
 run_mw <- function(ic, scenario = list(), settings = list()) {
   update_equilibrium(mahlkow_wanner_2021, ic, scenario,
                      utils::modifyList(mw_settings, settings))
@@ -198,11 +225,10 @@ test_that("carbon tax, border tariffs and export rebates satisfy their accountin
   expect_equal(values_by(out$cbam_revenue_new)[countries], values_by(out$tariff_revenue_new)[countries], tolerance = 1e-10)
   expect_equal(values_by(out$export_rebate_costs_new)[countries], values_by(out$export_subsidy_costs_new)[countries], tolerance = 1e-10)
 
-  # income identity
-  income_new <- values_by(ic$value_added)[countries] * values_by(res$output$wage_change)[countries] +
-    values_by(out$tariff_revenue_new)[countries] + values_by(out$export_subsidy_costs_new)[countries] +
-    values_by(out$tax_revenue_new)[countries] - values_by(res$output$trade_balance_new)[countries]
-  expect_equal(values_by(out$income_new)[countries], income_new, tolerance = 1e-10)
+  # income: processed income equals final demand from the raw solver outputs
+  accounts <- independent_accounts(res, ic)
+  expect_equal(values_by(out$income_new)[countries], accounts$income[countries], tolerance = 1e-8)
+  expect_equal(values_by(out$tax_revenue_new)[countries], accounts$tax_revenue[countries], tolerance = 1e-10)
 
   # factor markets clear: value added from gross output equals wage bill
   va_new <- values_by(res$output$value_added_new)
@@ -265,13 +291,36 @@ for (rule in c("fixed", "fixed_country_share", "fixed_global_share", "zero")) {
   test_that(paste("a carbon policy converges under the trade-balance rule", rule), {
     ic <- make_mw_fixture(n_countries = 4L, n_sectors = 3L, seed = 71L)
     res <- run_mw(ic, carbon_scenario(ic, carbon_tax = 1),
-                  list(trade_balance_rule = rule, tolerance = 1e-8))
+                  list(trade_balance_rule = rule, tolerance = 1e-12))
     expect_true(res$info$convergence)
     processed <- process_results(res)
     expect_true(all(is.finite(processed$output$welfare_change$value)))
-    # all rules but fixed_country_share keep the world trade balance at zero
+
+    countries <- attr(ic, "countries")
+    accounts <- independent_accounts(res, ic)
+    balance <- values_by(res$output$trade_balance_new)[countries]
+    balance0 <- values_by(ic$trade_balance)[countries]
+    va0 <- values_by(ic$value_added)[countries]
+    va_new <- values_by(res$output$value_added_new)[countries]
+
+    # the trade balance follows its rule
+    expected <- switch(rule,
+                       fixed = balance0,
+                       fixed_country_share = balance0 / va0 * va_new,
+                       fixed_global_share = balance0 / sum(va0) * sum(va_new),
+                       zero = 0 * balance0)
+    expect_equal(balance, expected, tolerance = 1e-10)
+
+    # fixed_country_share does not keep the world trade balance at zero, as in
+    # caliendo_parro_2015, so world accounts cannot close under that rule
     if (rule != "fixed_country_share") {
-      expect_equal(sum(res$output$trade_balance_new$value), 0, tolerance = 1e-8)
+      expect_equal(sum(balance), 0, tolerance = 1e-10)
+      # net exports at prices net of tariffs equal the solved trade balance
+      expect_equal(accounts$net_exports[countries], balance, tolerance = 1e-8)
+      # value added equals the wage bill; world value added is the numeraire
+      expect_equal(accounts$value_added[countries], va0 * values_by(res$output$wage_change)[countries],
+                   tolerance = 1e-10)
+      expect_equal(sum(va_new), sum(va0), tolerance = 1e-12)
     }
   })
 }
@@ -319,6 +368,65 @@ test_that("policy variables in the initial conditions do not become model dimens
   res_scenario <- run_mw(ic, carbon_scenario(ic), list(tolerance = 1e-8))
   expect_identical(names(res_ic$settings$model_dimensions), names(res_scenario$settings$model_dimensions))
   expect_equal(res_ic$output$wage_change, res_scenario$output$wage_change)
+})
+
+test_that("a named carbon_intensity must name each sector once", {
+  ic <- make_mw_fixture(n_countries = 3L, n_sectors = 3L, seed = 85L)
+  scenario <- carbon_scenario(ic)
+  scenario$carbon_intensity <- c(s1 = 0.1, s2 = 0.2, typo = 0.3)
+  expect_error(run_mw(ic, scenario), "typo")
+  scenario$carbon_intensity <- c(s1 = 0.1, s2 = 0.2, s2 = 0.3)
+  expect_error(run_mw(ic, scenario), "each sector once")
+  # a named vector in any order equals the table
+  scenario$carbon_intensity <- setNames(rev(ic$carbon_intensity$value), rev(ic$carbon_intensity$sector))
+  expect_equal(run_mw(ic, scenario, list(tolerance = 1e-8))$output$wage_change,
+               run_mw(ic, carbon_scenario(ic), list(tolerance = 1e-8))$output$wage_change)
+})
+
+test_that("carbon_tax is a single number and the switches are TRUE/FALSE or 1/0", {
+  ic <- make_mw_fixture(seed = 86L)
+  # a value-only table is not a valid input
+  expect_error(suppressWarnings(run_mw(ic, carbon_scenario(ic, carbon_tax = data.table(value = 1)))))
+  expect_error(run_mw(ic, carbon_scenario(ic, carbon_tax = "1")), "single finite number")
+  as_logical <- run_mw(ic, carbon_scenario(ic), list(tolerance = 1e-8))
+  as_number <- run_mw(ic, carbon_scenario(ic, carbon_tariff = 1, export_rebate = 1), list(tolerance = 1e-8))
+  expect_identical(as_number$output$wage_change, as_logical$output$wage_change)
+  expect_error(run_mw(ic, carbon_scenario(ic, carbon_tariff = 2)), "TRUE or FALSE")
+})
+
+test_that("the carbon tax adds to the exogenous tax wedge", {
+  ic <- make_mw_equilibrium_fixture(n_countries = 3L, n_sectors = 3L, seed = 87L)
+  tax_new <- dt_country_sector(1.1, attr(ic, "countries"), attr(ic, "sectors"))
+  res <- run_mw(ic, list(carbon_tax = 0.5, countries_climate_club = "c2", tax_new = tax_new))
+  expect_true(res$info$convergence)
+  price_new <- values_by_keys(process_results(res)$output$price_new, c("country", "sector"))
+  intensity <- setNames(ic$carbon_intensity$value, ic$carbon_intensity$sector)
+  tax <- res$output$tax_new
+  expected <- 1.1 + ifelse(tax$country == "c2",
+                           0.5 * intensity[tax$sector] / price_new[paste(tax$country, tax$sector)], 0)
+  expect_equal(tax$value, unname(expected), tolerance = 1e-8)
+})
+
+test_that("a baseline carbon price is replaced with tax_new = 1 and carbon_tax", {
+  # the baseline wedge is a carbon price of 0.4 on all use, in every country
+  ic <- make_mw_equilibrium_fixture(n_countries = 3L, n_sectors = 3L, seed = 88L,
+                                    carbon_price = 0.4)
+  ones <- dt_country_sector(1, attr(ic, "countries"), attr(ic, "sectors"))
+
+  # the same carbon price again: nothing changes
+  same <- run_mw(ic, list(carbon_tax = 0.4, tax_new = ones))
+  expect_true(same$info$convergence)
+  expect_equal(same$output$wage_change$value, rep(1, 3), tolerance = 1e-8)
+  expect_equal(same$output$price_change$value, rep(1, 9), tolerance = 1e-8)
+  expect_equal(same$output$tax_new$value, ic$tax[order(sector, country)]$value, tolerance = 1e-8)
+  expect_equal(process_results(same)$output$welfare_change$value, rep(1, 3), tolerance = 1e-8)
+
+  # a higher carbon price lowers emissions
+  higher <- run_mw(ic, list(carbon_tax = 0.8, tax_new = ones))
+  expect_true(all(process_results(higher)$output$emissions_change$value < 1))
+  # without tax_new = 1 the new price comes on top of the old wedge
+  on_top <- run_mw(ic, list(carbon_tax = 0.4))
+  expect_true(all(on_top$output$tax_new$value > ic$tax[order(sector, country)]$value))
 })
 
 test_that("additional_output_variables returns further solver variables", {
