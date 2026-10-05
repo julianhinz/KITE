@@ -1,8 +1,25 @@
 # KITE 26.10
 
-Bug fixes for `caliendo_parro_2015` and `chowdhry_hinz_kamin_wanner_2022`.
-Results of multi-sector runs without coalition transfers and without export
-subsidies are bit-identical to 26.09.
+A new model, `mahlkow_wanner_2021`, and bug fixes for `caliendo_parro_2015`
+and `chowdhry_hinz_kamin_wanner_2022`. Results of multi-sector runs without
+coalition transfers and without export subsidies are bit-identical to 26.09.
+
+- **New model `mahlkow_wanner_2021`: carbon tax, climate club and border
+  carbon adjustment.** Extends `caliendo_parro_2015` with a carbon tax that
+  the members of a climate club (`countries_climate_club`) levy on the
+  carbon content (`carbon_intensity`) of all goods used at home, a border
+  carbon tariff on the carbon embodied in imports from non-members
+  (`scenario_carbon_tariff`) and an export rebate on exports to non-members
+  (`scenario_export_rebate`), both in the sectors `cbam_sector`. The tax is
+  per unit of carbon, so the model needs initial price levels (`price`).
+  It supports all instruments, trade-balance rules and settings of
+  `caliendo_parro_2015`, one-sector models and the same numeraire (world
+  value added). Without a carbon tax it reproduces `caliendo_parro_2015`.
+  `process_results()` adds tax revenue, border carbon tariff revenue, export
+  rebate costs, emissions and price levels, includes the tax revenue in
+  income, and reports a tax-inclusive consumer price index.
+- **Plain vectors in the initial conditions** (such as a scalar policy
+  setting) no longer become model dimensions.
 
 - **One-sector models now solve and process.** With a single sector, array
   slices dropped to vectors: `process_results()` failed for
