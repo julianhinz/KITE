@@ -176,8 +176,8 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
     input[['trade_flow_new']] = input[['trade_share_new']]
     for (c in settings[['model_dimensions']]$destination) input[['trade_flow_new']][c,,] = input[['trade_share_new']][c,,] * t(input[['expenditure_new']])
 
-    # compute value added new ----
-    input[['value_added_new']] = array_sum(input[['factor_share']] * (apply(input[['trade_flow_new']] / input[['tariff_new']], c(1,3), sum)), 1)
+    # compute value added new, from output at producer prices ----
+    input[['value_added_new']] = array_sum(input[['factor_share']] * (apply(input[['trade_flow_new']] / (input[['tariff_new']] * input[['export_subsidy_new']]), c(1,3), sum)), 1)
     
     # update trade balance ----
     input[['trade_balance_new']] = update_trade_balance(input[['trade_balance']],
