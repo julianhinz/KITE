@@ -20,6 +20,12 @@
 #' price levels `price` set its ad-valorem equivalent. Non-members keep
 #' `tax_new0`.
 #'
+#' The carbon tax adds to the exogenous wedge `tax_new0`. If the baseline
+#' wedge `tax` already contains a carbon price `t0`, a scenario with the new
+#' carbon price `t1` therefore sets `tax_new = 1` (it removes the old wedge)
+#' and `carbon_tax = t1`. With `tax_new` left at its default `tax`, the new
+#' carbon price would come on top of the old one.
+#'
 #' Expenditure `expenditure` (`X[n, s]`) includes the tax. Firms pay
 #' `tax * price` for their intermediate inputs, so the input-cost change is
 #' `w^beta * prod_k (tax_change[n, k] * price_change[n, k])^((1 - beta) * gamma[k, s])`.
@@ -52,15 +58,15 @@
 #'   \item{`price`}{Initial price levels, dimensions: country x sector. Required for a carbon tax.}
 #'   \item{`carbon_intensity`}{Carbon per unit of sector goods, dimension: sector. Required for a carbon tax.}
 #'   \item{`tax`, `tax_new`}{Initial and exogenous new tax wedges, dimensions: country x sector (default 1).}
-#'   \item{`carbon_tax`}{Carbon tax per unit of carbon, a number (default 0, no carbon policy).}
+#'   \item{`carbon_tax`}{Carbon tax per unit of carbon, a single number (default 0, no carbon policy).}
 #'   \item{`countries_climate_club`}{Members of the climate club: a character
 #'     vector of country codes, or a 0/1 (or logical) indicator by country, as
 #'     a named vector or as a data.table with columns `country` and `value`
 #'     (default: all countries).}
 #'   \item{`cbam_sector`}{Sectors with border carbon adjustment, in the same
 #'     forms with `sector` (default: all sectors).}
-#'   \item{`scenario_carbon_tariff`}{`TRUE` for border carbon tariffs (default `FALSE`).}
-#'   \item{`scenario_export_rebate`}{`TRUE` for export rebates (default `FALSE`).}
+#'   \item{`scenario_carbon_tariff`}{`TRUE` (or 1) for border carbon tariffs (default `FALSE`).}
+#'   \item{`scenario_export_rebate`}{`TRUE` (or 1) for export rebates (default `FALSE`).}
 #' }
 #' An unknown country or sector code in `countries_climate_club` or
 #' `cbam_sector` is an error.
@@ -357,7 +363,6 @@ prepare_carbon_policy_mw_2021 = function (input, model_dimensions) {
   # carbon tax: a single number
   carbon_tax = input[['carbon_tax']]
   if (is.null(carbon_tax)) carbon_tax = 0
-  if (is.data.frame(carbon_tax)) carbon_tax = carbon_tax[['value']]
   if (!is.numeric(carbon_tax) || length(carbon_tax) != 1L || !is.finite(carbon_tax)) {
     cli_abort("{.var carbon_tax} must be a single finite number.")
   }
@@ -371,7 +376,6 @@ prepare_carbon_policy_mw_2021 = function (input, model_dimensions) {
   for (v in c("scenario_carbon_tariff", "scenario_export_rebate")) {
     x = input[[v]]
     if (is.null(x)) x = FALSE
-    if (is.data.frame(x)) x = x[['value']]
     if (length(x) != 1L || is.na(x) || !(is.logical(x) || (is.numeric(x) && x %in% c(0, 1)))) {
       cli_abort("{.var {v}} must be TRUE or FALSE.")
     }
@@ -385,15 +389,7 @@ prepare_carbon_policy_mw_2021 = function (input, model_dimensions) {
   if (is.null(input[['carbon_intensity']])) {
     cli_abort("A {.var carbon_tax} needs {.var carbon_intensity} (dimension: sector).")
   }
-  carbon_intensity = input[['carbon_intensity']]
-  if (length(carbon_intensity) != length(sectors) || any(!is.finite(carbon_intensity))) {
-    cli_abort("{.var carbon_intensity} must have one finite value for each of the {length(sectors)} sector{?s}.")
-  }
-  if (!is.null(names(carbon_intensity)) && !all(names(carbon_intensity) == sectors)) {
-    carbon_intensity = carbon_intensity[sectors]
-  }
-  input[['carbon_intensity']] = array(as.numeric(carbon_intensity), dim = length(sectors),
-                                      dimnames = list(sector = sectors))
+  input[['carbon_intensity']] = carbon_intensity_by_sector_mw_2021(input[['carbon_intensity']], sectors)
 
   if (is.null(input[['price']])) {
     cli_abort("A {.var carbon_tax} needs the initial price levels {.var price} (dimensions: country x sector).")
@@ -404,6 +400,42 @@ prepare_carbon_policy_mw_2021 = function (input, model_dimensions) {
   }
 
   input
+}
+
+
+#' Read carbon intensities for Mahlkow and Wanner (2021)
+#'
+#' @description
+#' Checks that `carbon_intensity` has one finite value for each sector and
+#' orders it by sector. A named vector or array must name each sector once.
+#'
+#' @return Array of carbon intensities, dimension: sector.
+#'
+#' @param carbon_intensity Vector or array of carbon intensities.
+#' @param sectors Character vector of all sectors.
+#'
+
+carbon_intensity_by_sector_mw_2021 = function (carbon_intensity, sectors) {
+
+  if (!is.numeric(carbon_intensity) || length(carbon_intensity) != length(sectors)) {
+    cli_abort("{.var carbon_intensity} must have one finite value for each of the {length(sectors)} sector{?s}.")
+  }
+  labels = names(carbon_intensity)
+  if (!is.null(labels)) {
+    unknown = setdiff(labels, sectors)
+    missing = setdiff(sectors, labels)
+    if (length(unknown) > 0 || length(missing) > 0 || anyDuplicated(labels)) {
+      cli_abort(c("{.var carbon_intensity} must name each sector once.",
+                  "x" = if (length(unknown) > 0) "Unknown sector{?s}: {.val {unknown}}.",
+                  "x" = if (length(missing) > 0) "Missing sector{?s}: {.val {missing}}."))
+    }
+    carbon_intensity = carbon_intensity[sectors]
+  }
+  if (any(!is.finite(carbon_intensity))) {
+    cli_abort("{.var carbon_intensity} must have one finite value for each of the {length(sectors)} sector{?s}.")
+  }
+  array(as.numeric(carbon_intensity), dim = length(sectors),
+        dimnames = list(sector = sectors))
 }
 
 
@@ -823,9 +855,8 @@ carbon_policy_outputs_mw_2021 = function (initial_conditions,
   if (!is.null(price)) output[['price_new']] = price * output[['price_change']]
 
   carbon_intensity = value_of("carbon_intensity")
-  if (!is.null(price) && !is.null(carbon_intensity) && length(carbon_intensity) == length(sectors)) {
-    if (!is.null(names(carbon_intensity))) carbon_intensity = carbon_intensity[sectors]
-    carbon_intensity = as.numeric(carbon_intensity)
+  if (!is.null(price) && !is.null(carbon_intensity)) {
+    carbon_intensity = as.numeric(carbon_intensity_by_sector_mw_2021(carbon_intensity, sectors))
 
     quantity = initial_conditions[['expenditure']] / (initial_conditions[['tax']] * price)
     quantity_new = supplier_expenditure_new / output[['price_new']]

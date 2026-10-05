@@ -34,6 +34,12 @@ sector-`s` goods in `n`. The carbon tax is a specific tax, so the initial
 price levels `price` set its ad-valorem equivalent. Non-members keep
 `tax_new0`.
 
+The carbon tax adds to the exogenous wedge `tax_new0`. If the baseline
+wedge `tax` already contains a carbon price `t0`, a scenario with the new
+carbon price `t1` therefore sets `tax_new = 1` (it removes the old wedge)
+and `carbon_tax = t1`. With `tax_new` left at its default `tax`, the new
+carbon price would come on top of the old one.
+
 Expenditure `expenditure` (`X[n, s]`) includes the tax. Firms pay
 `tax * price` for their intermediate inputs, so the input-cost change is
 `w^beta * prod_k (tax_change[n, k] * price_change[n, k])^((1 - beta) * gamma[k, s])`.
@@ -66,15 +72,15 @@ Put the policy variables into the `model_scenario`.
   \item{`price`}{Initial price levels, dimensions: country x sector. Required for a carbon tax.}
   \item{`carbon_intensity`}{Carbon per unit of sector goods, dimension: sector. Required for a carbon tax.}
   \item{`tax`, `tax_new`}{Initial and exogenous new tax wedges, dimensions: country x sector (default 1).}
-  \item{`carbon_tax`}{Carbon tax per unit of carbon, a number (default 0, no carbon policy).}
+  \item{`carbon_tax`}{Carbon tax per unit of carbon, a single number (default 0, no carbon policy).}
   \item{`countries_climate_club`}{Members of the climate club: a character
     vector of country codes, or a 0/1 (or logical) indicator by country, as
     a named vector or as a data.table with columns `country` and `value`
     (default: all countries).}
   \item{`cbam_sector`}{Sectors with border carbon adjustment, in the same
     forms with `sector` (default: all sectors).}
-  \item{`scenario_carbon_tariff`}{`TRUE` for border carbon tariffs (default `FALSE`).}
-  \item{`scenario_export_rebate`}{`TRUE` for export rebates (default `FALSE`).}
+  \item{`scenario_carbon_tariff`}{`TRUE` (or 1) for border carbon tariffs (default `FALSE`).}
+  \item{`scenario_export_rebate`}{`TRUE` (or 1) for export rebates (default `FALSE`).}
 }
 An unknown country or sector code in `countries_climate_club` or
 `cbam_sector` is an error.
