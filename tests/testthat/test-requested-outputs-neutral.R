@@ -25,7 +25,10 @@ neutral_scenario <- function(ic) {
 
 expect_all_requests_neutral <- function(model, ic, extra = list()) {
   variables <- returnable_variables(model)
-  expect_true("value_added_new" %in% variables)
+  # Guard against a silent shrinkage of the extracted list, which would
+  # weaken this test without failing it.
+  expect_gt(length(variables), 30)
+  expect_true(all(c("income_new", "value_added_new") %in% variables))
   scenario <- neutral_scenario(ic)
   plain <- update_equilibrium(model, ic, scenario, c(neutral_settings, extra))
   requested <- update_equilibrium(model, ic, scenario,
