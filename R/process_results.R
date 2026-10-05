@@ -183,11 +183,11 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   # compute tariff revenue ----
   output[['tariff_revenue']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country)  output[['tariff_revenue']][[c]] =
-    sum(((initial_conditions[['tariff']][,c,] - 1) * initial_conditions[['trade_share']][,c,] / initial_conditions[['tariff']][,c,]) %*% initial_conditions[['expenditure']][c,])
+    sum(((slice_matrix(initial_conditions[['tariff']], c, 2) - 1) * slice_matrix(initial_conditions[['trade_share']], c, 2) / slice_matrix(initial_conditions[['tariff']], c, 2)) %*% initial_conditions[['expenditure']][c,])
 
   output[['tariff_revenue_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country)  output[['tariff_revenue_new']][[c]] =
-    sum(((model_scenario[['tariff_new']][,c,] - 1) * output[['trade_share_new']][,c,] / model_scenario[['tariff_new']][,c,]) %*% output[['expenditure_new']][c,])
+    sum(((slice_matrix(model_scenario[['tariff_new']], c, 2) - 1) * slice_matrix(output[['trade_share_new']], c, 2) / slice_matrix(model_scenario[['tariff_new']], c, 2)) %*% output[['expenditure_new']][c,])
 
   output[['tariff_revenue_change']] = output[['tariff_revenue_new']] / output[['tariff_revenue']]
   output[['tariff_revenue_change']][is.nan(output[['tariff_revenue_change']])] = 1
@@ -226,11 +226,11 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   # compute production ----
   output[['production']] = initialize_variable(settings[['model_dimensions']][c("country", "sector")])
   for (c in settings[['model_dimensions']]$country) output[['production']][c,] =
-    t(initial_conditions[['expenditure']]) %diag% (initial_conditions[['trade_share']][c,,] / (initial_conditions[['tariff']][c,,] * initial_conditions[['export_subsidy']][c,,]))
+    t(initial_conditions[['expenditure']]) %diag% (slice_matrix(initial_conditions[['trade_share']], c) / (slice_matrix(initial_conditions[['tariff']], c) * slice_matrix(initial_conditions[['export_subsidy']], c)))
 
   output[['production_new']] = initialize_variable(settings[['model_dimensions']][c("country", "sector")])
   for (c in settings[['model_dimensions']]$country) output[['production_new']][c,] =
-    t(output[['expenditure_new']]) %diag% (output[['trade_share_new']][c,,] / (model_scenario[['tariff_new']][c,,] * model_scenario[['export_subsidy_new']][c,,]))
+    t(output[['expenditure_new']]) %diag% (slice_matrix(output[['trade_share_new']], c) / (slice_matrix(model_scenario[['tariff_new']], c) * slice_matrix(model_scenario[['export_subsidy_new']], c)))
 
   no_baseline_production = !is.finite(output[['production']]) |
     abs(output[['production']]) < .Machine$double.eps
