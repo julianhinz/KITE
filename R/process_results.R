@@ -219,6 +219,11 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
     output[['income_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
     for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
       labour_income_new[c] + output[['tariff_revenue_new']][c] + output[['export_subsidy_costs_new']][c] - solved_trade_balance[c]
+    # transfers within a coalition (chowdhry_hinz_kamin_wanner_2022) are part of income
+    if (!is.null(output[['transfer']])) {
+      for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
+        output[['income_new']][[c]] + output[['transfer']][c]
+    }
   }
 
   output[['income_change']] = output[['income_new']] / output[['income']]
