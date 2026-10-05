@@ -210,7 +210,12 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
     initial_conditions[['value_added']][c] + output[['tariff_revenue']][c] + output[['export_subsidy_costs']][c] - initial_conditions[['trade_balance']][c]
 
   labour_income_new = output[['wage_change']] * initial_conditions[['value_added']] * population_change
-  if (is.null(output[['value_added_new']])) output[['value_added_new']] = labour_income_new
+  # caliendo_parro_2015 returns value_added_new by default. Other models return
+  # it only on request, evaluated before the final wage update; compute it here
+  # so that a requested variable does not change the processed results
+  if (model != "caliendo_parro_2015" || is.null(output[['value_added_new']])) {
+    output[['value_added_new']] = labour_income_new
+  }
 
   solved_trade_balance = output[['trade_balance_new']]
   if (is.null(solved_trade_balance)) solved_trade_balance = model_scenario[['trade_balance_new']]

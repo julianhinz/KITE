@@ -41,6 +41,11 @@ balances sum to zero they change only within solver tolerance.
   trade balance). A requested `income_new` therefore no longer changes the
   processed results. The solver's own `income_new` is its last inner
   iterate and differs from the processed one within solver tolerance.
+  In the same way, for `chowdhry_hinz_kamin_wanner_2022` a requested
+  `value_added_new` replaced the processed one (wage change times baseline
+  value added) by a value from before the final wage update.
+  `process_results()` now ignores it, so a variable requested through
+  `additional_output_variables` no longer changes any processed result.
   *Behaviour change:* the solver variables `income`, `income_new`, `output`
   and `output_new`, when requested, now have a `country` dimension instead of
   `destination` or `origin`. Runs that do not request them do not change.
