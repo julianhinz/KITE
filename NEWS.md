@@ -60,6 +60,23 @@ balances sum to zero they change only within solver tolerance.
   without a coalition they stay on the scale of `caliendo_parro_2015`. In
   these runs the trade-balance rule cannot hold for the world as a whole, so
   the two solvers stop at fixed points that differ slightly.
+- **No convergence when the trade-balance rule cannot hold for the world.**
+  *Behaviour change:* world exports equal world imports, so the solved
+  trade balances must sum to zero for the world. When they did not,
+  `update_equilibrium()` still reported `convergence = TRUE`, but labour
+  markets did not clear and the result depended on `vfactor`. This happens
+  with `trade_balance_rule = "fixed_country_share"` after a shock, and on a
+  baseline whose trade balances do not sum to zero under every rule except
+  `zero`. `update_equilibrium()` now checks the world sum of
+  `trade_balance_new` after the solve, with tolerance
+  `settings$tolerance_accounting` (default `1e-10`) times world value
+  added, and also refuses solutions with non-positive value added. If the
+  check fails, `convergence` is `FALSE` and a warning of class
+  `kite_world_trade_balance` (fields `model` and `accounting`) explains
+  why. The new `results$info$accounting` holds the details for every run.
+  The check uses only the solver output, so it applies to every model in
+  the package. Results do not change: outputs of all runs are
+  bit-identical to before; only `info` changes.
 
 # KITE 26.09
 

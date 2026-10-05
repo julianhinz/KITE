@@ -233,6 +233,8 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
                                        "iterations"),
                                      settings[["additional_output_variables"]]))
   attr(result, "inner_converged") = inner_converged
+  # for the world trade balance check in update_equilibrium()
+  attr(result, "value_added_new") = input[['value_added_new']]
   result
 
 }

@@ -28,9 +28,23 @@ An S3-classed `kite_result` (also inheriting the model class, e.g.
   `model` (character id), `model_function` (the model function used),
   `initial_conditions`, `model_scenario`, `output` (named list of result
   tables produced by the model), `settings`, and an `info` block with
-  `convergence` (TRUE / FALSE / NA), `criterion`, `iterations`, and
-  `elapsed_seconds`. Use [process_results()] for downstream formatting.
+  `convergence` (TRUE / FALSE / NA), `criterion`, `iterations`,
+  `elapsed_seconds` and `accounting`. `accounting` is the result of the
+  world trade balance check (see Details). Use [process_results()] for
+  downstream formatting.
 }
 \description{
 `update_equilibrium()` updates the equilibrium to a counterfactual situation with new trade costs and/or other changes.
+}
+\details{
+Convergence also requires that the solved trade balances sum to zero for
+the world, within `settings$tolerance_accounting` (default 1e-10) times
+world value added, and that solved value added is positive. If the trade
+balance rule cannot hold for the world, `convergence` is FALSE and a
+warning of class `kite_world_trade_balance` explains why. This happens
+with `trade_balance_rule = "fixed_country_share"` after a shock, and with
+baseline trade balances that do not sum to zero under every rule except
+`"zero"`. `results$info$accounting` holds `ok`, `rule`,
+`world_trade_balance`, `baseline_world_trade_balance`,
+`world_value_added`, `tolerance` and `reason`.
 }
