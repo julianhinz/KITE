@@ -1,3 +1,28 @@
+# KITE 26.10
+
+Bug fixes for `caliendo_parro_2015` and `chowdhry_hinz_kamin_wanner_2022`.
+Results of multi-sector runs without coalition transfers and without export
+subsidies are bit-identical to 26.09.
+
+- **One-sector models now solve and process.** With a single sector, array
+  slices dropped to vectors: `process_results()` failed for
+  `caliendo_parro_2015` and the `chowdhry_hinz_kamin_wanner_2022` solver
+  failed in its expenditure and transfer updates. A new internal helper,
+  `slice_matrix()`, keeps such slices as matrices. *Behaviour change:*
+  country x sector results of one-sector runs (e.g. `price_change`) now keep
+  their `sector` column.
+- **Coalition transfers in processed income and welfare.** *Behaviour
+  change:* for `chowdhry_hinz_kamin_wanner_2022`, `process_results()` now adds
+  the solver's coalition `transfer` to `income_new`, so `income_change` and
+  `welfare_change` include it. Coalition members now show the common welfare
+  change that the transfer rule sets. Runs without a coalition do not change.
+- **Export subsidies in CHKW value added.** *Behaviour change:* the
+  `chowdhry_hinz_kamin_wanner_2022` solver now computes `value_added_new`
+  from trade flows net of tariffs and export subsidies, as
+  `caliendo_parro_2015` does. This changes `value_added_new` and, under the
+  `fixed_country_share` and `fixed_global_share` trade-balance rules, the
+  equilibrium, whenever export subsidies differ from one.
+
 # KITE 26.09
 
 Public release. Merges release/26.05 into main.
