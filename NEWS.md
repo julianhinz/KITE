@@ -69,8 +69,10 @@ balances sum to zero they change only within solver tolerance.
   baseline whose trade balances do not sum to zero under every rule except
   `zero`. `update_equilibrium()` now checks the world sum of
   `trade_balance_new` after the solve, with tolerance
-  `settings$tolerance_accounting` (default `1e-10`) times world value
-  added, and also refuses solutions with non-positive value added. If the
+  `settings$tolerance_accounting` (default `1e-6`) times world value
+  added, and also refuses solutions with non-positive value added. The
+  default lets rounding residuals in data pass; the infeasible cases above
+  typically leave residuals of `1e-4` of world value added or more. If the
   check fails, `convergence` is `FALSE` and a warning of class
   `kite_world_trade_balance` (fields `model` and `accounting`) explains
   why. The new `results$info$accounting` holds the details for every run.

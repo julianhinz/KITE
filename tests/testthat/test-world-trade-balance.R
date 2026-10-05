@@ -102,6 +102,23 @@ test_that("multi-sector fixtures pass the check", {
   }
 })
 
+test_that("the default tolerance lets rounding residuals pass", {
+  # a baseline whose trade balances sum to `share` of world value added
+  residual_ic <- function(share) {
+    ic <- wtb_ic()
+    world_value_added <- sum(ic$value_added$value)
+    ic$trade_balance <- copy(ic$trade_balance)[country == "c1", value := value + share * world_value_added]
+    ic
+  }
+  for (m in names(wtb_models)) {
+    ic <- residual_ic(1e-8)
+    result <- expect_feasible(wtb_models[[m]], ic, wtb_shock(ic), "fixed", paste(m, "1e-8"))
+    expect_identical(result$info$accounting$tolerance, 1e-6)
+    ic <- residual_ic(1.5e-6)
+    expect_infeasible(wtb_models[[m]], ic, wtb_shock(ic), "fixed", paste(m, "1.5e-6"))
+  }
+})
+
 test_that("tolerance_accounting sets the tolerance", {
   ic <- wtb_ic(unbalanced = TRUE)
   settings <- c(wtb_settings("fixed"), list(tolerance_accounting = 0.1))

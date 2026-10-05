@@ -98,7 +98,7 @@ check_world_trade_balance = function (trade_balance,
                                       value_added,
                                       value_added_new = NULL,
                                       trade_balance_rule = "fixed",
-                                      tolerance = 1e-10) {
+                                      tolerance = 1e-6) {
 
   out = list(ok = NA, rule = trade_balance_rule,
              world_trade_balance = NA_real_,

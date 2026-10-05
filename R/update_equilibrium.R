@@ -15,8 +15,9 @@
 #'
 #' @details
 #' Convergence also requires that the solved trade balances sum to zero for
-#' the world, within `settings$tolerance_accounting` (default 1e-10) times
-#' world value added, and that solved value added is positive. If the trade
+#' the world, within `settings$tolerance_accounting` (default 1e-6) times
+#' world value added, and that solved value added is positive. The default
+#' lets rounding residuals in baseline data pass. If the trade
 #' balance rule cannot hold for the world, `convergence` is FALSE and a
 #' warning of class `kite_world_trade_balance` explains why. This happens
 #' with `trade_balance_rule = "fixed_country_share"` after a shock, and with
@@ -178,7 +179,7 @@ update_equilibrium = function (model = NULL,
                                          input[['value_added']],
                                          value_added_new,
                                          if (is.null(settings[['trade_balance_rule']])) "fixed" else settings[['trade_balance_rule']],
-                                         if (is.null(settings[['tolerance_accounting']])) 1e-10 else settings[['tolerance_accounting']])
+                                         if (is.null(settings[['tolerance_accounting']])) 1e-6 else settings[['tolerance_accounting']])
   if (identical(accounting[['ok']], FALSE)) {
     convergence = FALSE
     warn_world_trade_balance(model_id, accounting)

@@ -10,7 +10,7 @@ check_world_trade_balance(
   value_added,
   value_added_new = NULL,
   trade_balance_rule = "fixed",
-  tolerance = 1e-10
+  tolerance = 1e-06
 )
 }
 \arguments{

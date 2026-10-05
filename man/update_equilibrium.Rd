@@ -38,8 +38,9 @@ An S3-classed `kite_result` (also inheriting the model class, e.g.
 }
 \details{
 Convergence also requires that the solved trade balances sum to zero for
-the world, within `settings$tolerance_accounting` (default 1e-10) times
-world value added, and that solved value added is positive. If the trade
+the world, within `settings$tolerance_accounting` (default 1e-6) times
+world value added, and that solved value added is positive. The default
+lets rounding residuals in baseline data pass. If the trade
 balance rule cannot hold for the world, `convergence` is FALSE and a
 warning of class `kite_world_trade_balance` explains why. This happens
 with `trade_balance_rule = "fixed_country_share"` after a shock, and with
