@@ -30,6 +30,17 @@ subsidies are bit-identical to 26.09.
   `income_new` replaced the processed income, so `income_change` and
   `welfare_change` were 0 for every country. `process_results()` now always
   computes `income_new` and `price_index_change` from the solution.
+- **Warning for scenario variables that a model does not use.**
+  *Behaviour change:* `update_equilibrium()` now warns when `model_scenario`
+  sets a variable that the model does not read. Before, such a variable had
+  no effect and no warning: for example, `coalition_member_new` for
+  `chowdhry_hinz_kamin_wanner_2022` gave zero coalition transfers. The
+  warning has class `kite_unknown_scenario_variable` and the fields `model`
+  and `variables`. It names the variable to set instead where one exists
+  (`coalition_member`). Both solvers compute `tariff_change` and
+  `export_subsidy_change` themselves, so these now warn and point to
+  `tariff_new` and `export_subsidy_new`. Model functions outside the package
+  are not checked. Results do not change.
 
 # KITE 26.09
 
