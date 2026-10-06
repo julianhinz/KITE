@@ -139,3 +139,42 @@ test_that("check_world_trade_balance refuses degenerate solutions", {
   # a model without trade_balance_new is not checked
   expect_true(is.na(check_world_trade_balance(c(1, -1), NULL, va)$ok))
 })
+
+test_that("tolerance_accounting is validated", {
+  ic <- wtb_ic()
+  for (bad in list("1e-6", c(1e-6, 1e-6), NA_real_, Inf, -1e-6, numeric(0))) {
+    expect_error(update_equilibrium(caliendo_parro_2015, ic, list(),
+                                    c(wtb_settings("fixed"), list(tolerance_accounting = bad))),
+                 "tolerance_accounting")
+  }
+  result <- update_equilibrium(caliendo_parro_2015, ic, list(),
+                               c(wtb_settings("fixed"), list(tolerance_accounting = 1e-3)))
+  expect_identical(result$info$accounting$tolerance, 1e-3)
+})
+
+test_that("a model that returns long tables is checked", {
+  # a model outside the package may return its outputs as long tables
+  long_table <- function(x) data.table(country = names(x), value = as.numeric(x))
+  long_model <- function(input, settings) {
+    result <- caliendo_parro_2015(input, settings)
+    result$trade_balance_new <- long_table(result$trade_balance_new)
+    result$value_added_new <- long_table(result$value_added_new)
+    result
+  }
+  ic <- wtb_ic()
+  expect_no_error(result <- update_equilibrium(long_model, ic, wtb_shock(ic), wtb_settings("fixed")))
+  expect_true(result$info$accounting$ok)
+  expect_warning(result <- update_equilibrium(long_model, ic, wtb_shock(ic),
+                                              wtb_settings("fixed_country_share")),
+                 class = "kite_world_trade_balance")
+  expect_false(result$info$convergence)
+  expect_false(result$info$accounting$ok)
+
+  # unit level: long tables, and inputs that are not numeric
+  long <- data.table(country = c("a", "b"), value = c(2, -2))
+  expect_true(check_world_trade_balance(long, long, data.table(country = c("a", "b"), value = c(100, 100)),
+                                        data.table(country = c("a", "b"), value = c(150, 50)))$ok)
+  expect_true(is.na(check_world_trade_balance(c(1, -1), list("a", "b"), c(100, 100))$ok))
+  expect_true(is.na(check_world_trade_balance(c(1, -1), c(2, -2), c(100, 100),
+                                              data.table(country = "a"))$ok))
+})

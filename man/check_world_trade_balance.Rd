@@ -16,7 +16,8 @@ check_world_trade_balance(
 \arguments{
 \item{trade_balance}{Vector of baseline trade balances, dimension: country.}
 
-\item{trade_balance_new}{Vector of solved trade balances, dimension: country.}
+\item{trade_balance_new}{Vector of solved trade balances, dimension: country.
+Each of the four inputs may also be a long table with a `value` column.}
 
 \item{value_added}{Vector of baseline value added, dimension: country.}
 

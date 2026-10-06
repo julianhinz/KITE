@@ -62,6 +62,13 @@ update_equilibrium = function (model = NULL,
   if (is.null(settings[['verbose']])) settings[['verbose']] = 1L
   if (is.null(settings[['require_inner_convergence']])) settings[['require_inner_convergence']] = TRUE
   if (is.null(settings[['elasticity_convention']])) settings[['elasticity_convention']] = "auto"
+  if (!is.null(settings[['tolerance_accounting']])) {
+    tolerance_accounting = settings[['tolerance_accounting']]
+    if (!is.numeric(tolerance_accounting) || length(tolerance_accounting) != 1L ||
+        !is.finite(tolerance_accounting) || tolerance_accounting < 0) {
+      cli_abort("{.code settings$tolerance_accounting} must be a single finite number >= 0 (a share of world value added; default 1e-6).")
+    }
+  }
 
   # move elasticity variables into nested list if provided at top-level
   initial_conditions <- nest_elasticity_variables(initial_conditions)

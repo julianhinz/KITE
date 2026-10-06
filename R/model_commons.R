@@ -7,6 +7,14 @@
 #' (3) "fixed_global_share" - Constant share in global value added,
 #' (4) "zero" - Set all trade balances to zero.
 #'
+#' The solved trade balances must sum to zero for the world. Under
+#' `"fixed_country_share"` they do so only if value added changes by the same
+#' factor in every country, which in practice means no shock. Under `"fixed"`
+#' and `"fixed_global_share"` they do so only if the baseline trade balances
+#' sum to zero. [update_equilibrium()] reports `convergence = FALSE` with a
+#' warning of class `kite_world_trade_balance` for runs where the rule cannot
+#' hold for the world.
+#'
 #' @return Vector of updated trade balance values, dimension: country.
 #'
 #' @param trade_balance Vector of initial trade balances, dimension: country.
@@ -85,6 +93,7 @@ update_trade_balance = function (trade_balance,
 #'
 #' @param trade_balance Vector of baseline trade balances, dimension: country.
 #' @param trade_balance_new Vector of solved trade balances, dimension: country.
+#'   Each of the four inputs may also be a long table with a `value` column.
 #' @param value_added Vector of baseline value added, dimension: country.
 #' @param value_added_new Vector of solved value added, dimension: country, or
 #'   NULL when the model does not return it.
@@ -108,19 +117,37 @@ check_world_trade_balance = function (trade_balance,
              reason = NA_character_)
   fail = function (reason) { out$ok = FALSE; out$reason = reason; out }
 
+  # arrays and vectors as they are; long tables (e.g. from a model outside the
+  # package) through their `value` column; anything else as missing
+  values = function (x) {
+    if (is.data.frame(x)) {
+      if (!"value" %in% names(x)) return(NULL)
+      x = x[["value"]]
+    }
+    if (!is.numeric(x)) return(NULL)
+    as.numeric(x)
+  }
+  trade_balance = values(trade_balance)
+  trade_balance_new = values(trade_balance_new)
+  value_added = values(value_added)
+  if (!is.null(value_added_new)) {
+    value_added_new = values(value_added_new)
+    if (is.null(value_added_new)) {
+      out$reason = "value_added_new is not numeric"
+      return(out)
+    }
+  }
+
   if (is.null(trade_balance_new) || is.null(trade_balance)) {
-    out$reason = "the model returns no trade_balance_new"
+    out$reason = "the model returns no numeric trade_balance_new"
     return(out)
   }
 
-  trade_balance = as.numeric(trade_balance)
-  trade_balance_new = as.numeric(trade_balance_new)
   out$baseline_world_trade_balance = sum(trade_balance)
   if (!all(is.finite(trade_balance_new))) return(fail("trade_balance_new is not finite"))
 
   # degenerate solutions: value added must stay positive
   if (!is.null(value_added_new)) {
-    value_added_new = as.numeric(value_added_new)
     if (!all(is.finite(value_added_new))) return(fail("value_added_new is not finite"))
     if (any(value_added_new <= 0)) {
       return(fail(sprintf("value_added_new is not positive for %d of %d countries (degenerate solution)",
@@ -128,7 +155,7 @@ check_world_trade_balance = function (trade_balance,
     }
     world_value_added = sum(value_added_new)
   } else {
-    world_value_added = sum(abs(as.numeric(value_added)))
+    world_value_added = if (is.null(value_added)) NA_real_ else sum(abs(value_added))
   }
   if (!is.finite(world_value_added) || world_value_added <= 0) {
     return(fail("world value added is not positive"))

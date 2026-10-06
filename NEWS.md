@@ -89,7 +89,8 @@ balances sum to zero they change only within solver tolerance.
   `settings$tolerance_accounting` (default `1e-6`) times world value
   added, and also refuses solutions with non-positive value added. The
   default lets rounding residuals in data pass; the infeasible cases above
-  typically leave residuals of `1e-4` of world value added or more. If the
+  typically leave residuals of `1e-4` of world value added or more.
+  `tolerance_accounting` must be a single finite number `>= 0`. If the
   check fails, `convergence` is `FALSE` and a warning of class
   `kite_world_trade_balance` (fields `model` and `accounting`) explains
   why. The new `results$info$accounting` holds the details for every run.

@@ -48,7 +48,7 @@ test_that("requested CP outputs do not change processed results", {
   ic <- make_fixture(seed = 501L)
   expect_all_requests_neutral(caliendo_parro_2015, ic)
   expect_all_requests_neutral(caliendo_parro_2015, ic,
-                              list(trade_balance_rule = "fixed_country_share"))
+                              list(trade_balance_rule = "fixed_global_share"))
   expect_all_requests_neutral(caliendo_parro_2015, make_one_sector_fixture(seed = 502L))
 })
 
@@ -56,7 +56,7 @@ test_that("requested CHKW outputs do not change processed results", {
   ic <- make_fixture(seed = 503L, coalition_members = c("c1", "c3"))
   expect_all_requests_neutral(chowdhry_hinz_kamin_wanner_2022, ic)
   expect_all_requests_neutral(chowdhry_hinz_kamin_wanner_2022, ic,
-                              list(trade_balance_rule = "fixed_country_share"))
+                              list(trade_balance_rule = "fixed_global_share"))
   expect_all_requests_neutral(chowdhry_hinz_kamin_wanner_2022,
                               make_one_sector_fixture(seed = 504L,
                                                       coalition_members = c("c1", "c3")))
