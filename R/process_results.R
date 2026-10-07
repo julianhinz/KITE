@@ -36,7 +36,8 @@ process_results.kite_result = function(results, ...) {
   # Models that share the standard result structure can use the standard processor.
   # If a new model file provides its own process_results.<model> S3 method,
   # it will take precedence over this fallback.
-  standard_compatible = c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022")
+  standard_compatible = c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022",
+                          "mahlkow_wanner_2021")
   if (model_id %in% standard_compatible) {
     return(.process_results_standard(results))
   }
@@ -50,6 +51,9 @@ process_results.caliendo_parro_2015 = function(results, ...) .process_results_st
 #' @export
 process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .process_results_standard(results)
 
+#' @export
+process_results.mahlkow_wanner_2021 = function(results, ...) .process_results_standard(results)
+
 .process_results_standard = function(results) {
 
   # setup
@@ -61,8 +65,11 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   model_scenario = lapply(results[['model_scenario']], cast_variable)
   output = lapply(results[['output']], cast_variable)
 
+  # mahlkow_wanner_2021: tax-inclusive expenditure and endogenous border instruments
+  carbon_model = model == "mahlkow_wanner_2021"
+
   population_change = NULL
-  if (model == "caliendo_parro_2015") {
+  if (model %in% c("caliendo_parro_2015", "mahlkow_wanner_2021")) {
     population_change = model_scenario[['population_change']]
     if (is.null(population_change)) population_change = initial_conditions[['population_change']]
   }
@@ -91,6 +98,20 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   if (is.null(model_scenario[['export_subsidy_new']])) model_scenario[['export_subsidy_new']] = initial_conditions[['export_subsidy']]
   model_scenario[['export_subsidy_change']] = model_scenario[['export_subsidy_new']] / initial_conditions[['export_subsidy']]
 
+  # create tax arrays; use the solved tax wedges, border carbon tariffs and export rebates ----
+  if (carbon_model) {
+    tariff_new0 = model_scenario[['tariff_new']]
+    export_subsidy_new0 = model_scenario[['export_subsidy_new']]
+    for (v in c("tariff_new", "export_subsidy_new", "tax_new")) {
+      if (!is.null(output[[v]])) model_scenario[[v]] = output[[v]]
+    }
+    model_scenario[['tariff_change']] = model_scenario[['tariff_new']] / initial_conditions[['tariff']]
+    model_scenario[['export_subsidy_change']] = model_scenario[['export_subsidy_new']] / initial_conditions[['export_subsidy']]
+    if (is.null(initial_conditions[['tax']])) initial_conditions[['tax']] = initialize_variable(settings[['model_dimensions']][c("country", "sector")])
+    if (is.null(model_scenario[['tax_new']])) model_scenario[['tax_new']] = initial_conditions[['tax']]
+    model_scenario[['tax_change']] = model_scenario[['tax_new']] / initial_conditions[['tax']]
+  }
+
   # create trade balance arrays ----
   if (is.null(initial_conditions[['trade_balance']])) initial_conditions[['trade_balance']] = initialize_variable(settings[['model_dimensions']][c("country")])
   if (is.null(model_scenario[['trade_balance_new']])) model_scenario[['trade_balance_new']] = initial_conditions[['trade_balance']]
@@ -116,6 +137,26 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
     initial_conditions[['expenditure']] = t(initial_conditions[['expenditure_result']][['expenditure_new']])
     initial_conditions[['transfer']] = NULL
     initial_conditions[['expenditure_result']] = NULL
+  } else if (carbon_model) {
+    initial_conditions[['expenditure_result']] = update_expenditure_mw_2021(
+      initialize_variable(settings[['model_dimensions']][c("country", "sector")]),
+      initial_conditions[['consumption_share']],
+      initial_conditions[['input_share']],
+      initial_conditions[['trade_share']],
+      initial_conditions[['tariff']],
+      initial_conditions[['export_subsidy']],
+      initial_conditions[['tax']],
+      initial_conditions[['value_added']],
+      initialize_variable(settings[['model_dimensions']][c("country")]),
+      initial_conditions[['trade_balance']],
+      settings[['model_dimensions']],
+      settings[['tolerance']],
+      verbose = FALSE,
+      convergence_method = "root_mean_square",
+      max_inner_iterations = 5000L
+    )
+    initial_conditions[['expenditure']] = initial_conditions[['expenditure_result']][['expenditure_new']]
+    initial_conditions[['expenditure_result']] = NULL
   } else {
     initial_conditions[['expenditure_result']] = update_expenditure_cp_2015(
       initialize_variable(settings[['model_dimensions']][c("country", "sector")]),
@@ -137,14 +178,22 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
     initial_conditions[['expenditure_result']] = NULL
   }
 
+  # expenditure that reaches suppliers (net of the tax wedge of mahlkow_wanner_2021) ----
+  supplier_expenditure = initial_conditions[['expenditure']]
+  supplier_expenditure_new = output[['expenditure_new']]
+  if (carbon_model) {
+    supplier_expenditure = supplier_expenditure / initial_conditions[['tax']]
+    supplier_expenditure_new = supplier_expenditure_new / model_scenario[['tax_new']]
+  }
+
   # compute new trade flows ----
   output[['trade_flow']] = initialize_variable(settings[['model_dimensions']][c("origin", "destination", "sector")])
   for (c in settings[['model_dimensions']]$country) {
-    output[['trade_flow']][c,,] = initial_conditions[['trade_share']][c,,] * initial_conditions[['expenditure']]
+    output[['trade_flow']][c,,] = initial_conditions[['trade_share']][c,,] * supplier_expenditure
   }
 
   output[['trade_flow_new']] = initialize_variable(settings[['model_dimensions']][c("origin", "destination", "sector")])
-  for (c in settings[['model_dimensions']]$country) output[['trade_flow_new']][c,,] = output[['trade_share_new']][c,,] * output[['expenditure_new']]
+  for (c in settings[['model_dimensions']]$country) output[['trade_flow_new']][c,,] = output[['trade_share_new']][c,,] * supplier_expenditure_new
 
   output[['trade_flow_change']] = output[['trade_flow_new']] / output[['trade_flow']]
 
@@ -176,6 +225,12 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   for (c in settings[['model_dimensions']]$country) {
     output[['price_index_change']][[c]] = exp(sum(initial_conditions[['consumption_share']][c,] * log(get_country_sector_vector(output[['price_change']], c))))
   }
+  # households pay the tax wedge of mahlkow_wanner_2021: tax-inclusive consumer price index
+  if (carbon_model) {
+    for (c in settings[['model_dimensions']]$country) {
+      output[['price_index_change']][[c]] = exp(sum(initial_conditions[['consumption_share']][c,] * log(get_country_sector_vector(output[['price_change']], c) * model_scenario[['tax_change']][c,])))
+    }
+  }
 
   # compute trade share change ----
   output[['trade_share_change']] = output[['trade_share_new']] / initial_conditions[['trade_share']]
@@ -183,11 +238,11 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   # compute tariff revenue ----
   output[['tariff_revenue']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country)  output[['tariff_revenue']][[c]] =
-    sum(((slice_matrix(initial_conditions[['tariff']], c, 2) - 1) * slice_matrix(initial_conditions[['trade_share']], c, 2) / slice_matrix(initial_conditions[['tariff']], c, 2)) %*% initial_conditions[['expenditure']][c,])
+    sum(((slice_matrix(initial_conditions[['tariff']], c, 2) - 1) * slice_matrix(initial_conditions[['trade_share']], c, 2) / slice_matrix(initial_conditions[['tariff']], c, 2)) %*% supplier_expenditure[c,])
 
   output[['tariff_revenue_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country)  output[['tariff_revenue_new']][[c]] =
-    sum(((slice_matrix(model_scenario[['tariff_new']], c, 2) - 1) * slice_matrix(output[['trade_share_new']], c, 2) / slice_matrix(model_scenario[['tariff_new']], c, 2)) %*% output[['expenditure_new']][c,])
+    sum(((slice_matrix(model_scenario[['tariff_new']], c, 2) - 1) * slice_matrix(output[['trade_share_new']], c, 2) / slice_matrix(model_scenario[['tariff_new']], c, 2)) %*% supplier_expenditure_new[c,])
 
   output[['tariff_revenue_change']] = output[['tariff_revenue_new']] / output[['tariff_revenue']]
   output[['tariff_revenue_change']][is.nan(output[['tariff_revenue_change']])] = 1
@@ -195,25 +250,38 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
   # compute export subsidy costs ----
   output[['export_subsidy_costs']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country) output[['export_subsidy_costs']][[c]] =
-    sum(initial_conditions[['expenditure']] * ((initial_conditions[['export_subsidy']][c,,] - 1) * initial_conditions[['trade_share']][c,,] / (initial_conditions[['tariff']][c,,] * initial_conditions[['export_subsidy']][c,,])))
+    sum(supplier_expenditure * ((initial_conditions[['export_subsidy']][c,,] - 1) * initial_conditions[['trade_share']][c,,] / (initial_conditions[['tariff']][c,,] * initial_conditions[['export_subsidy']][c,,])))
 
   output[['export_subsidy_costs_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country) output[['export_subsidy_costs_new']][[c]] =
-    sum(output[['expenditure_new']] * ((model_scenario[['export_subsidy_new']][c,,] - 1) * output[['trade_share_new']][c,,] / (model_scenario[['tariff_new']][c,,] * model_scenario[['export_subsidy_new']][c,,])))
+    sum(supplier_expenditure_new * ((model_scenario[['export_subsidy_new']][c,,] - 1) * output[['trade_share_new']][c,,] / (model_scenario[['tariff_new']][c,,] * model_scenario[['export_subsidy_new']][c,,])))
 
   output[['export_subsidy_costs_change']] = output[['export_subsidy_costs_new']] / output[['export_subsidy_costs']]
   output[['export_subsidy_costs_change']][is.nan(output[['export_subsidy_costs_change']])] = 1
+
+  # compute carbon policy outputs of mahlkow_wanner_2021 ----
+  if (carbon_model) {
+    output = carbon_policy_outputs_mw_2021(initial_conditions, model_scenario, output,
+                                           tariff_new0, export_subsidy_new0,
+                                           supplier_expenditure_new, settings[['model_dimensions']])
+  }
 
   # compute income ----
   output[['income']] = initialize_variable(settings[['model_dimensions']][c("country")])
   for (c in settings[['model_dimensions']]$country) output[['income']][[c]] =
     initial_conditions[['value_added']][c] + output[['tariff_revenue']][c] + output[['export_subsidy_costs']][c] - initial_conditions[['trade_balance']][c]
+  # tax revenue of mahlkow_wanner_2021 is part of income
+  if (carbon_model) {
+    for (c in settings[['model_dimensions']]$country) output[['income']][[c]] =
+      output[['income']][[c]] + output[['tax_revenue']][c]
+  }
 
   labour_income_new = output[['wage_change']] * initial_conditions[['value_added']] * population_change
-  # caliendo_parro_2015 returns value_added_new by default. Other models return
-  # it only on request, evaluated before the final wage update; compute it here
-  # so that a requested variable does not change the processed results
-  if (model != "caliendo_parro_2015" || is.null(output[['value_added_new']])) {
+  # caliendo_parro_2015 and mahlkow_wanner_2021 return value_added_new by
+  # default. Other models return it only on request, evaluated before the final
+  # wage update; compute it here so that a requested variable does not change
+  # the processed results
+  if (!model %in% c("caliendo_parro_2015", "mahlkow_wanner_2021") || is.null(output[['value_added_new']])) {
     output[['value_added_new']] = labour_income_new
   }
 
@@ -231,17 +299,22 @@ process_results.chowdhry_hinz_kamin_wanner_2022 = function(results, ...) .proces
     for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
       output[['income_new']][[c]] + output[['transfer']][c]
   }
+  # tax revenue of mahlkow_wanner_2021 is part of income
+  if (carbon_model) {
+    for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
+      output[['income_new']][[c]] + output[['tax_revenue_new']][c]
+  }
 
   output[['income_change']] = output[['income_new']] / output[['income']]
 
   # compute production ----
   output[['production']] = initialize_variable(settings[['model_dimensions']][c("country", "sector")])
   for (c in settings[['model_dimensions']]$country) output[['production']][c,] =
-    t(initial_conditions[['expenditure']]) %diag% (slice_matrix(initial_conditions[['trade_share']], c) / (slice_matrix(initial_conditions[['tariff']], c) * slice_matrix(initial_conditions[['export_subsidy']], c)))
+    t(supplier_expenditure) %diag% (slice_matrix(initial_conditions[['trade_share']], c) / (slice_matrix(initial_conditions[['tariff']], c) * slice_matrix(initial_conditions[['export_subsidy']], c)))
 
   output[['production_new']] = initialize_variable(settings[['model_dimensions']][c("country", "sector")])
   for (c in settings[['model_dimensions']]$country) output[['production_new']][c,] =
-    t(output[['expenditure_new']]) %diag% (slice_matrix(output[['trade_share_new']], c) / (slice_matrix(model_scenario[['tariff_new']], c) * slice_matrix(model_scenario[['export_subsidy_new']], c)))
+    t(supplier_expenditure_new) %diag% (slice_matrix(output[['trade_share_new']], c) / (slice_matrix(model_scenario[['tariff_new']], c) * slice_matrix(model_scenario[['export_subsidy_new']], c)))
 
   no_baseline_production = !is.finite(output[['production']]) |
     abs(output[['production']]) < .Machine$double.eps

@@ -99,7 +99,21 @@ test_that("variables that the models read do not warn", {
       population_change = ones_cs,
       global_value_added_change = ones_cs)),
     chowdhry_hinz_kamin_wanner_2022 = c(common, list(
-      coalition_member = ic$coalition_member))
+      coalition_member = ic$coalition_member)),
+    mahlkow_wanner_2021 = c(common, list(
+      expenditure = ic$expenditure,
+      productivity_change = copy(ic$factor_share)[, value := 1],
+      population_change = ones_cs,
+      global_value_added_change = ones_cs,
+      tax = copy(ic$factor_share)[, value := 1],
+      tax_new = copy(ic$factor_share)[, value := 1],
+      price = copy(ic$factor_share)[, value := 1],
+      carbon_tax = 0.5,
+      carbon_intensity = data.table(sector = unique(ic$factor_share$sector), value = 0.1),
+      countries_climate_club = "c1",
+      cbam_sector = unique(ic$factor_share$sector)[1],
+      scenario_carbon_tariff = TRUE,
+      scenario_export_rebate = TRUE))
   )
   for (model in names(scenarios)) {
     expect_no_warning(
@@ -125,8 +139,13 @@ test_that("the known scenario variables are the inputs a solver reads before it 
     rhs <- sub(assignment, "", line)
     grepl(pattern, rhs, fixed = TRUE)
   }
-  for (model in c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022")) {
+  for (model in c("caliendo_parro_2015", "chowdhry_hinz_kamin_wanner_2022",
+                   "mahlkow_wanner_2021")) {
     lines <- deparse(body(get(model)), width.cutoff = 500L)
+    # mahlkow_wanner_2021 reads its carbon policy in a helper before its body
+    if (model == "mahlkow_wanner_2021") {
+      lines <- c(deparse(body(KITE:::prepare_carbon_policy_mw_2021), width.cutoff = 500L), lines)
+    }
     used <- unique(regmatches(lines, gregexpr('input\\[\\["[A-Za-z0-9_.]+"\\]\\]', lines)))
     used <- unique(gsub('^input\\[\\["|"\\]\\]$', "", unlist(used)))
     read <- used[vapply(used, function(v) first_use_is_read(lines, v), logical(1))]
