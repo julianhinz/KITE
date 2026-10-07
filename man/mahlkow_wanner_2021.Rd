@@ -23,7 +23,10 @@ policy it solves the same equilibrium with the same algorithm.
 \details{
 **Carbon tax.** Using one unit of sector-`s` goods emits
 `carbon_intensity[s]` units of carbon, whether a firm uses the goods as an
-intermediate input or a household consumes them. A member `n` of the climate
+intermediate input or a household consumes them. This is the carbon released
+by burning the goods, so `carbon_intensity` is non-zero only for fossil-fuel
+sectors. Production-based intensities (the emissions of the producing sector
+per unit of its output) do not fit this definition. A member `n` of the climate
 club levies the carbon tax per unit of carbon on all domestic use of these
 goods, domestic and imported alike. The tax is a wedge `tax[n, s]` on the
 price of sector-`s` goods in `n`:
@@ -31,8 +34,10 @@ price of sector-`s` goods in `n`:
 where `tax_new0` is the exogenous tax (scenario `tax_new`, default `tax`)
 and `price_new = price * price_change` is the endogenous price level of
 sector-`s` goods in `n`. The carbon tax is a specific tax, so the initial
-price levels `price` set its ad-valorem equivalent. Non-members keep
-`tax_new0`.
+price levels `price` set its ad-valorem equivalent. `carbon_tax`, `price`
+and `value_added` must therefore use the same currency unit. Because world
+value added is the numeraire, the carbon tax is in units of baseline
+currency. Non-members keep `tax_new0`.
 
 The carbon tax adds to the exogenous wedge `tax_new0`. If the baseline
 wedge `tax` already contains a carbon price `t0`, a scenario with the new
@@ -52,7 +57,11 @@ price index `prod_s (tax_change[n, s] * price_change[n, s])^alpha[n, s]`.
 **Border carbon adjustment.** Producing one unit of value of sector `s` in
 country `i` embodies the carbon
 `embodied[i, s] = sum_k carbon_intensity[k] / (tax_new[i, k] * price_new[i, k]) * (1 - beta[i, s]) * gamma[i, k, s]`
-of its intermediate inputs. With `scenario_carbon_tariff = TRUE`, club
+of its intermediate inputs. This counts only the carbon in the direct
+intermediate inputs, not the carbon of earlier stages, such as the fuel
+burned to generate purchased electricity. The carbon tax, in contrast,
+raises the costs of club producers through all stages of the supply chain.
+With `scenario_carbon_tariff = TRUE`, club
 members levy the carbon tax on this embodied carbon on imports from
 non-members in the sectors `cbam_sector`:
 `tariff_new[i, n, s] = tariff_new0[i, n, s] + carbon_tax * embodied[i, s]`.
@@ -70,7 +79,7 @@ values as `tax_new`, `tariff_new` and `export_subsidy_new`.
 Put the policy variables into the `model_scenario`.
 \describe{
   \item{`price`}{Initial price levels, dimensions: country x sector. Required for a carbon tax.}
-  \item{`carbon_intensity`}{Carbon per unit of sector goods, dimension: sector. Required for a carbon tax.}
+  \item{`carbon_intensity`}{Carbon released by burning one unit of sector goods, dimension: sector; non-zero only for fossil-fuel sectors. Required for a carbon tax.}
   \item{`tax`, `tax_new`}{Initial and exogenous new tax wedges, dimensions: country x sector (default 1).}
   \item{`carbon_tax`}{Carbon tax per unit of carbon, a single number (default 0, no carbon policy).}
   \item{`countries_climate_club`}{Members of the climate club: a character
@@ -93,7 +102,7 @@ The settings are those of [caliendo_parro_2015()]: `vfactor`,
 [caliendo_parro_2015()], world value added is the numeraire.
 }
 \references{
-Mahlkow, H. and Wanner, J. (2021). The economic and environmental effects
-of carbon border adjustments in a quantitative trade model. Unpublished
-manuscript, Kiel Institute for the World Economy.
+Mahlkow, H., Petersen, T. and Wanner, J. (2021). Folgen eines höheren
+CO2-Preises in der EU – wer gewinnt, wer verliert? Wirtschaftsdienst,
+101(11), 870–877. \doi{10.1007/s10273-021-3048-5}
 }
