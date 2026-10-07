@@ -24,7 +24,8 @@ warning), `"silent"`, or `"strict"`.}
 }
 \value{
 An S3-classed `kite_result` (also inheriting the model class, e.g.
-  `caliendo_parro_2015` or `chowdhry_hinz_kamin_wanner_2022`) with elements:
+  `caliendo_parro_2015`, `chowdhry_hinz_kamin_wanner_2022` or
+  `mahlkow_wanner_2021`) with elements:
   `model` (character id), `model_function` (the model function used),
   `initial_conditions`, `model_scenario`, `output` (named list of result
   tables produced by the model), `settings`, and an `info` block with
