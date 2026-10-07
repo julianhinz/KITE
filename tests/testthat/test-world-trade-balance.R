@@ -8,7 +8,14 @@ library(data.table)
 # `vfactor`. Such runs must report convergence = FALSE and warn.
 
 wtb_models <- list(caliendo_parro_2015 = caliendo_parro_2015,
-                   chowdhry_hinz_kamin_wanner_2022 = chowdhry_hinz_kamin_wanner_2022)
+                   chowdhry_hinz_kamin_wanner_2022 = chowdhry_hinz_kamin_wanner_2022,
+                   mahlkow_wanner_2021 = mahlkow_wanner_2021)
+
+# mahlkow_wanner_2021 also needs price levels and carbon intensities
+wtb_input <- function(model, ic) {
+  if (identical(model, mahlkow_wanner_2021) && is.null(ic$carbon_intensity)) ic <- add_carbon_inputs(ic)
+  ic
+}
 
 wtb_settings <- function(rule, vfactor = 0.2) {
   list(verbose = 0L, tolerance = 1e-12, vfactor = vfactor,
@@ -27,6 +34,7 @@ wtb_ic <- function(unbalanced = FALSE) {
 }
 
 expect_infeasible <- function(model, ic, scenario, rule, label) {
+  ic <- wtb_input(model, ic)
   expect_warning(result <- update_equilibrium(model, ic, scenario, wtb_settings(rule)),
                  class = "kite_world_trade_balance")
   expect_false(result$info$convergence, label = label)
@@ -40,6 +48,7 @@ expect_infeasible <- function(model, ic, scenario, rule, label) {
 }
 
 expect_feasible <- function(model, ic, scenario, rule, label) {
+  ic <- wtb_input(model, ic)
   expect_no_warning(result <- update_equilibrium(model, ic, scenario, wtb_settings(rule)))
   expect_true(result$info$convergence, label = label)
   expect_true(result$info$accounting$ok, label = label)
@@ -91,6 +100,17 @@ test_that("feasible runs report convergence under every rule", {
 test_that("CHKW with a coalition passes the check", {
   ic <- make_one_sector_fixture(seed = 12L, coalition_members = c("c1", "c2"))
   expect_feasible(chowdhry_hinz_kamin_wanner_2022, ic, wtb_shock(ic), "fixed", "coalition")
+})
+
+test_that("mahlkow_wanner_2021 with a carbon policy is checked", {
+  ic <- add_carbon_inputs(make_fixture(n_countries = 4L, n_sectors = 3L, seed = 31L))
+  carbon <- list(carbon_tax = 2, countries_climate_club = c("c1", "c2"),
+                 scenario_carbon_tariff = TRUE, scenario_export_rebate = TRUE)
+  for (rule in c("fixed", "fixed_global_share", "zero")) {
+    result <- expect_feasible(mahlkow_wanner_2021, ic, carbon, rule, rule)
+    expect_lt(abs(result$info$accounting$world_trade_balance), 1e-8)
+  }
+  expect_infeasible(mahlkow_wanner_2021, ic, carbon, "fixed_country_share", "fixed_country_share")
 })
 
 test_that("multi-sector fixtures pass the check", {

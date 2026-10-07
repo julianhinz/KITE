@@ -96,16 +96,28 @@ for (rule in c("fixed", "fixed_country_share", "fixed_global_share", "zero")) {
     scenario <- cp_shock(ic)
     settings <- utils::modifyList(mw_settings, list(trade_balance_rule = rule))
 
-    cp <- update_equilibrium(caliendo_parro_2015, ic, scenario, settings)
+    run <- function(model, scenario) update_equilibrium(model, ic, scenario, settings)
     # carbon inputs without a carbon tax are inert
-    mw <- update_equilibrium(mahlkow_wanner_2021, ic,
-                             c(scenario, list(countries_climate_club = c("c1", "c4"),
-                                              scenario_carbon_tariff = TRUE,
-                                              scenario_export_rebate = TRUE)),
-                             settings)
-
-    expect_true(cp$info$convergence)
-    expect_true(mw$info$convergence)
+    mw_scenario <- c(scenario, list(countries_climate_club = c("c1", "c4"),
+                                    scenario_carbon_tariff = TRUE,
+                                    scenario_export_rebate = TRUE))
+    if (rule == "fixed_country_share") {
+      # the shock moves value added, so fixed country shares cannot balance
+      # world trade: both models report no convergence and warn
+      expect_warning(cp <- run(caliendo_parro_2015, scenario),
+                     class = "kite_world_trade_balance")
+      expect_warning(mw <- run(mahlkow_wanner_2021, mw_scenario),
+                     class = "kite_world_trade_balance")
+      expect_false(cp$info$convergence)
+      expect_false(mw$info$convergence)
+    } else {
+      cp <- run(caliendo_parro_2015, scenario)
+      mw <- run(mahlkow_wanner_2021, mw_scenario)
+      expect_true(cp$info$convergence)
+      expect_true(mw$info$convergence)
+    }
+    expect_equal(mw$info$accounting$world_trade_balance,
+                 cp$info$accounting$world_trade_balance, tolerance = 1e-10)
     expect_identical(mw$info$iterations, cp$info$iterations)
     for (v in names(cp$output)) {
       expect_equal(mw$output[[v]], cp$output[[v]], tolerance = 1e-12, info = v)
@@ -288,11 +300,20 @@ for (case in list(list(name = "a global carbon tax", club = c("c1", "c2", "c3", 
 # trade-balance rules ----
 
 for (rule in c("fixed", "fixed_country_share", "fixed_global_share", "zero")) {
-  test_that(paste("a carbon policy converges under the trade-balance rule", rule), {
+  test_that(paste("a carbon policy solves under the trade-balance rule", rule), {
     ic <- make_mw_fixture(n_countries = 4L, n_sectors = 3L, seed = 71L)
-    res <- run_mw(ic, carbon_scenario(ic, carbon_tax = 1),
-                  list(trade_balance_rule = rule, tolerance = 1e-12))
-    expect_true(res$info$convergence)
+    run <- function() run_mw(ic, carbon_scenario(ic, carbon_tax = 1),
+                             list(trade_balance_rule = rule, tolerance = 1e-12))
+    if (rule == "fixed_country_share") {
+      # the solver reaches its fixed point, but the world trade balance is
+      # not zero, so the run reports no convergence and warns
+      expect_warning(res <- run(), class = "kite_world_trade_balance")
+      expect_false(res$info$convergence)
+      expect_lte(res$info$criterion, 1e-12)
+    } else {
+      res <- run()
+      expect_true(res$info$convergence)
+    }
     processed <- process_results(res)
     expect_true(all(is.finite(processed$output$welfare_change$value)))
 
