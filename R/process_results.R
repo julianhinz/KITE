@@ -277,25 +277,32 @@ process_results.mahlkow_wanner_2021 = function(results, ...) .process_results_st
   }
 
   labour_income_new = output[['wage_change']] * initial_conditions[['value_added']] * population_change
-  if (is.null(output[['value_added_new']])) output[['value_added_new']] = labour_income_new
+  # caliendo_parro_2015 and mahlkow_wanner_2021 return value_added_new by
+  # default. Other models return it only on request, evaluated before the final
+  # wage update; compute it here so that a requested variable does not change
+  # the processed results
+  if (!model %in% c("caliendo_parro_2015", "mahlkow_wanner_2021") || is.null(output[['value_added_new']])) {
+    output[['value_added_new']] = labour_income_new
+  }
 
   solved_trade_balance = output[['trade_balance_new']]
   if (is.null(solved_trade_balance)) solved_trade_balance = model_scenario[['trade_balance_new']]
 
-  if (is.null(output[['income_new']])) {
-    output[['income_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
+  # always compute income_new here, also when the solver returns it on request:
+  # the solver's income_new is its last inner iterate, evaluated before the
+  # final wage and trade balance update, so it differs within solver tolerance
+  output[['income_new']] = initialize_variable(settings[['model_dimensions']][c("country")])
+  for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
+    labour_income_new[c] + output[['tariff_revenue_new']][c] + output[['export_subsidy_costs_new']][c] - solved_trade_balance[c]
+  # transfers within a coalition (chowdhry_hinz_kamin_wanner_2022) are part of income
+  if (!is.null(output[['transfer']])) {
     for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
-      labour_income_new[c] + output[['tariff_revenue_new']][c] + output[['export_subsidy_costs_new']][c] - solved_trade_balance[c]
-    # transfers within a coalition (chowdhry_hinz_kamin_wanner_2022) are part of income
-    if (!is.null(output[['transfer']])) {
-      for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
-        output[['income_new']][[c]] + output[['transfer']][c]
-    }
-    # tax revenue of mahlkow_wanner_2021 is part of income
-    if (carbon_model) {
-      for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
-        output[['income_new']][[c]] + output[['tax_revenue_new']][c]
-    }
+      output[['income_new']][[c]] + output[['transfer']][c]
+  }
+  # tax revenue of mahlkow_wanner_2021 is part of income
+  if (carbon_model) {
+    for (c in settings[['model_dimensions']]$country) output[['income_new']][[c]] =
+      output[['income_new']][[c]] + output[['tax_revenue_new']][c]
   }
 
   output[['income_change']] = output[['income_new']] / output[['income']]

@@ -50,6 +50,23 @@ balances sum to zero they change only within solver tolerance.
   `income_new` replaced the processed income, so `income_change` and
   `welfare_change` were 0 for every country. `process_results()` now always
   computes `income_new` and `price_index_change` from the solution.
+- **Requested `income_new` from CP (#13).** With
+  `additional_output_variables = "income_new"`, a `caliendo_parro_2015` run
+  solved, but `process_results()` failed with "object 'country' not found":
+  the solver's `income_new` had a `destination` dimension, and it replaced
+  the processed income. `process_results()` now always computes `income_new`
+  itself (labour income, tariff revenue and export subsidy costs, less the
+  trade balance). A requested `income_new` therefore no longer changes the
+  processed results. The solver's own `income_new` is its last inner
+  iterate and differs from the processed one within solver tolerance.
+  In the same way, for `chowdhry_hinz_kamin_wanner_2022` a requested
+  `value_added_new` replaced the processed one (wage change times baseline
+  value added) by a value from before the final wage update.
+  `process_results()` now ignores it, so a variable requested through
+  `additional_output_variables` no longer changes any processed result.
+  *Behaviour change:* the solver variables `income`, `income_new`, `output`
+  and `output_new`, when requested, now have a `country` dimension instead of
+  `destination` or `origin`. Runs that do not request them do not change.
 - **Warning for scenario variables that a model does not use.**
   *Behaviour change:* `update_equilibrium()` now warns when `model_scenario`
   sets a variable that the model does not read. Before, such a variable had
