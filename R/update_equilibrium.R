@@ -9,8 +9,23 @@
 #'   `model` (character id), `model_function` (the model function used),
 #'   `initial_conditions`, `model_scenario`, `output` (named list of result
 #'   tables produced by the model), `settings`, and an `info` block with
-#'   `convergence` (TRUE / FALSE / NA), `criterion`, `iterations`, and
-#'   `elapsed_seconds`. Use [process_results()] for downstream formatting.
+#'   `convergence` (TRUE / FALSE / NA), `criterion`, `iterations`,
+#'   `elapsed_seconds` and `accounting`. `accounting` is the result of the
+#'   world trade balance check (see Details). Use [process_results()] for
+#'   downstream formatting.
+#'
+#' @details
+#' Convergence also requires that the solved trade balances sum to zero for
+#' the world, within `settings$tolerance_accounting` (default 1e-6) times
+#' world value added, and that solved value added is positive. The default
+#' lets rounding residuals in baseline data pass. If the trade
+#' balance rule cannot hold for the world, `convergence` is FALSE and a
+#' warning of class `kite_world_trade_balance` explains why. This happens
+#' with `trade_balance_rule = "fixed_country_share"` after a shock, and with
+#' baseline trade balances that do not sum to zero under every rule except
+#' `"zero"`. `results$info$accounting` holds `ok`, `rule`,
+#' `world_trade_balance`, `baseline_world_trade_balance`,
+#' `world_value_added`, `tolerance` and `reason`.
 #'
 #' @param model Model specification to run, e.g. caliendo_parro_2015()
 #' @param initial_conditions List of initial conditions.
@@ -48,6 +63,13 @@ update_equilibrium = function (model = NULL,
   if (is.null(settings[['verbose']])) settings[['verbose']] = 1L
   if (is.null(settings[['require_inner_convergence']])) settings[['require_inner_convergence']] = TRUE
   if (is.null(settings[['elasticity_convention']])) settings[['elasticity_convention']] = "auto"
+  if (!is.null(settings[['tolerance_accounting']])) {
+    tolerance_accounting = settings[['tolerance_accounting']]
+    if (!is.numeric(tolerance_accounting) || length(tolerance_accounting) != 1L ||
+        !is.finite(tolerance_accounting) || tolerance_accounting < 0) {
+      cli_abort("{.code settings$tolerance_accounting} must be a single finite number >= 0 (a share of world value added; default 1e-6).")
+    }
+  }
 
   # move elasticity variables into nested list if provided at top-level
   initial_conditions <- nest_elasticity_variables(initial_conditions)
@@ -156,6 +178,22 @@ update_equilibrium = function (model = NULL,
   }
   if (!output_finite) convergence = FALSE
 
+  # A fixed point of the wage update is an equilibrium only if the solved
+  # trade balances sum to zero for the world. Otherwise labour markets do not
+  # clear and the solution depends on `vfactor`.
+  value_added_new = raw_output[['value_added_new']]
+  if (is.null(value_added_new)) value_added_new = attr(raw_output, "value_added_new")
+  accounting = check_world_trade_balance(input[['trade_balance']],
+                                         raw_output[['trade_balance_new']],
+                                         input[['value_added']],
+                                         value_added_new,
+                                         if (is.null(settings[['trade_balance_rule']])) "fixed" else settings[['trade_balance_rule']],
+                                         if (is.null(settings[['tolerance_accounting']])) 1e-6 else settings[['tolerance_accounting']])
+  if (identical(accounting[['ok']], FALSE)) {
+    convergence = FALSE
+    warn_world_trade_balance(model_id, accounting)
+  }
+
   # return results
   if (settings[['verbose']] >= 1L) cli_alert_success("Reshaping and returning results.")
 
@@ -168,7 +206,8 @@ update_equilibrium = function (model = NULL,
                  info = list(convergence = convergence,
                              criterion = criterion,
                              iterations = iterations,
-                             elapsed_seconds = elapsed_seconds))
+                             elapsed_seconds = elapsed_seconds,
+                             accounting = accounting))
 
   class(results) = c(model_id, "kite_result", "list")
   results
@@ -242,5 +281,30 @@ warn_unknown_scenario_variables = function (model_id, model_scenario) {
   warning(structure(class = c("kite_unknown_scenario_variable", "warning", "condition"),
                     list(message = message, call = NULL,
                          model = model_id, variables = unknown)))
+  invisible(NULL)
+}
+
+# Warn (class `kite_world_trade_balance`, fields `model` and `accounting`)
+# when the solved trade balances cannot hold for the world.
+warn_world_trade_balance = function (model_id, accounting) {
+  message = paste0("Model \"", model_id, "\" reports no convergence: ", accounting[['reason']], ".")
+  if (is.finite(accounting[['world_trade_balance']])) {
+    message = paste0(message, sprintf(
+      "\n* The solved trade balances sum to %.6g for the world (%.3g of world value added; tolerance %.1e). They must sum to zero.",
+      accounting[['world_trade_balance']],
+      accounting[['world_trade_balance']] / accounting[['world_value_added']],
+      accounting[['tolerance']]))
+    if (identical(accounting[['rule']], "fixed_country_share")) {
+      message = paste0(message, "\n* `fixed_country_share` holds for the world only if value added changes by the same factor in every country; use `fixed_global_share` or `zero`.")
+    }
+    if (abs(accounting[['baseline_world_trade_balance']]) > accounting[['tolerance']] * accounting[['world_value_added']] &&
+        !identical(accounting[['rule']], "zero")) {
+      message = paste0(message, sprintf("\n* The baseline trade balances sum to %.6g; balance them, or use `trade_balance_rule = \"zero\"`.",
+                                        accounting[['baseline_world_trade_balance']]))
+    }
+  }
+  warning(structure(class = c("kite_world_trade_balance", "warning", "condition"),
+                    list(message = message, call = NULL,
+                         model = model_id, accounting = accounting)))
   invisible(NULL)
 }

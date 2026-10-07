@@ -25,11 +25,19 @@ cp_request_scenario <- function(ic, export_subsidy = FALSE) {
   scenario
 }
 
-cp_request_pair <- function(ic, scenario, requested, extra = list()) {
+# `feasible = FALSE`: the trade balance rule cannot hold for the world, so
+# both runs warn and report no convergence
+cp_request_pair <- function(ic, scenario, requested, extra = list(),
+                            feasible = TRUE) {
   run <- function(more) {
-    result <- update_equilibrium(caliendo_parro_2015, ic, scenario,
-                                 c(cp_request_settings, extra, more))
-    expect_true(isTRUE(result$info$convergence))
+    settings <- c(cp_request_settings, extra, more)
+    if (feasible) {
+      result <- update_equilibrium(caliendo_parro_2015, ic, scenario, settings)
+    } else {
+      expect_warning(result <- update_equilibrium(caliendo_parro_2015, ic, scenario, settings),
+                     class = "kite_world_trade_balance")
+    }
+    expect_identical(isTRUE(result$info$convergence), feasible)
     list(result = result, processed = process_results(result))
   }
   list(plain = run(list()),
@@ -61,11 +69,14 @@ test_that("CP requested income_new processes and matches the processed income", 
                processed$value, tolerance = 1e-6)
 })
 
+# fixed_country_share moves the trade balances; after this shock it cannot
+# hold for the world, but a requested variable must still be neutral
 test_that("CP requested income_new is neutral with export subsidies and a moving trade balance", {
   ic <- make_fixture(seed = 402L)
   pair <- cp_request_pair(ic, cp_request_scenario(ic, export_subsidy = TRUE),
                           "income_new",
-                          list(trade_balance_rule = "fixed_country_share"))
+                          list(trade_balance_rule = "fixed_country_share"),
+                          feasible = FALSE)
   expect_cp_request_neutral(pair)
 })
 
