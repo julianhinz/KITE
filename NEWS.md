@@ -23,7 +23,6 @@ balances sum to zero they change only within solver tolerance.
   income, and reports a tax-inclusive consumer price index.
 - **Plain vectors in the initial conditions** (such as a scalar policy
   setting) no longer become model dimensions.
-
 - **One-sector models now solve and process.** With a single sector, array
   slices dropped to vectors: `process_results()` failed for
   `caliendo_parro_2015` and the `chowdhry_hinz_kamin_wanner_2022` solver
@@ -89,8 +88,9 @@ balances sum to zero they change only within solver tolerance.
   rescale of `caliendo_parro_2015` after its wage update, under every
   `trade_balance_rule`. On baselines whose trade balances sum to zero,
   results under `fixed`, `fixed_global_share` and `zero` change only within
-  solver tolerance (tolerance `1e-10`: wage changes by at most `5e-11`,
-  welfare changes by at most `4e-10`). `fixed_country_share` and
+  solver tolerance (in a comparison run with solver `tolerance = 1e-10`,
+  wage changes moved by at most `5e-11` and welfare changes by at most
+  `4e-10`). `fixed_country_share` and
   unbalanced-baseline runs change materially: they now converge, and
   without a coalition they stay on the scale of `caliendo_parro_2015`. In
   these runs the trade-balance rule cannot hold for the world as a whole, so
