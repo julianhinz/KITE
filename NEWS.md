@@ -1,3 +1,124 @@
+# KITE 26.10 — Brisk Fehmarn
+
+A new model, `mahlkow_wanner_2021`, and bug fixes for `caliendo_parro_2015`
+and `chowdhry_hinz_kamin_wanner_2022`.
+Results of multi-sector `caliendo_parro_2015` runs without export subsidies
+are bit-identical to 26.09. Results of `chowdhry_hinz_kamin_wanner_2022` runs
+change through its new numeraire (see below); on baselines whose trade
+balances sum to zero they change only within solver tolerance.
+
+- **New model `mahlkow_wanner_2021`: carbon tax, climate club and border
+  carbon adjustment.** Extends `caliendo_parro_2015` with a carbon tax that
+  the members of a climate club (`countries_climate_club`) levy on the
+  carbon content (`carbon_intensity`) of all goods used at home, a border
+  carbon tariff on the carbon embodied in imports from non-members
+  (`scenario_carbon_tariff`) and an export rebate on exports to non-members
+  (`scenario_export_rebate`), both in the sectors `cbam_sector`. The tax is
+  per unit of carbon, so the model needs initial price levels (`price`).
+  It supports all instruments, trade-balance rules and settings of
+  `caliendo_parro_2015`, one-sector models and the same numeraire (world
+  value added). Without a carbon tax it reproduces `caliendo_parro_2015`.
+  `process_results()` adds tax revenue, border carbon tariff revenue, export
+  rebate costs, emissions and price levels, includes the tax revenue in
+  income, and reports a tax-inclusive consumer price index.
+- **Plain vectors in the initial conditions** (such as a scalar policy
+  setting) no longer become model dimensions.
+- **One-sector models now solve and process.** With a single sector, array
+  slices dropped to vectors: `process_results()` failed for
+  `caliendo_parro_2015` and the `chowdhry_hinz_kamin_wanner_2022` solver
+  failed in its expenditure and transfer updates. A new internal helper,
+  `slice_matrix()`, keeps such slices as matrices. *Behaviour change:*
+  country x sector results of one-sector runs (e.g. `price_change`) now keep
+  their `sector` column.
+- **Coalition transfers in processed income and welfare.** *Behaviour
+  change:* for `chowdhry_hinz_kamin_wanner_2022`, `process_results()` now adds
+  the solver's coalition `transfer` to `income_new`, so `income_change` and
+  `welfare_change` include it. Coalition members now show the common welfare
+  change that the transfer rule sets. Runs without a coalition do not change.
+- **Export subsidies in CHKW value added.** *Behaviour change:* the
+  `chowdhry_hinz_kamin_wanner_2022` solver now computes `value_added_new`
+  from trade flows net of tariffs and export subsidies, as
+  `caliendo_parro_2015` does. This changes `value_added_new` and, under the
+  `fixed_country_share` and `fixed_global_share` trade-balance rules, the
+  equilibrium, whenever export subsidies differ from one.
+- **No placeholder outputs from CHKW.** *Behaviour change:* the
+  `chowdhry_hinz_kamin_wanner_2022` solver no longer returns `income_new`,
+  `income_old` or `price_index_change`, also when
+  `additional_output_variables` requests them. The solver holds only work
+  values for these (zeros, and ones for `price_index_change`). A requested
+  `income_new` replaced the processed income, so `income_change` and
+  `welfare_change` were 0 for every country. `process_results()` now always
+  computes `income_new` and `price_index_change` from the solution.
+- **Requested `income_new` from CP (#13).** With
+  `additional_output_variables = "income_new"`, a `caliendo_parro_2015` run
+  solved, but `process_results()` failed with "object 'country' not found":
+  the solver's `income_new` had a `destination` dimension, and it replaced
+  the processed income. `process_results()` now always computes `income_new`
+  itself (labour income, tariff revenue and export subsidy costs, less the
+  trade balance). A requested `income_new` therefore no longer changes the
+  processed results. The solver's own `income_new` is its last inner
+  iterate and differs from the processed one within solver tolerance.
+  In the same way, for `chowdhry_hinz_kamin_wanner_2022` a requested
+  `value_added_new` replaced the processed one (wage change times baseline
+  value added) by a value from before the final wage update.
+  `process_results()` now ignores it, so a variable requested through
+  `additional_output_variables` no longer changes any processed result.
+  *Behaviour change:* the solver variables `income`, `income_new`, `output`
+  and `output_new`, when requested, now have a `country` dimension instead of
+  `destination` or `origin`. Runs that do not request them do not change.
+- **Warning for scenario variables that a model does not use.**
+  *Behaviour change:* `update_equilibrium()` now warns when `model_scenario`
+  sets a variable that the model does not read. Before, such a variable had
+  no effect and no warning: for example, `coalition_member_new` for
+  `chowdhry_hinz_kamin_wanner_2022` gave zero coalition transfers. The
+  warning has class `kite_unknown_scenario_variable` and the fields `model`
+  and `variables`. It names the variable to set instead where one exists
+  (`coalition_member`). Both solvers compute `tariff_change` and
+  `export_subsidy_change` themselves, so these now warn and point to
+  `tariff_new` and `export_subsidy_new`. Model functions outside the package
+  are not checked. Results do not change.
+- **Numeraire for CHKW.** *Behaviour change:* `caliendo_parro_2015`
+  rescales the wage change in every iteration so that world value added
+  stays at its baseline level. `chowdhry_hinz_kamin_wanner_2022` had no
+  such rescale. Its excess-function wage update keeps the wage level only
+  while the world trade balance sums to zero. Under `fixed_country_share`
+  after a shock, and under any rule except `zero` on a baseline whose trade
+  balances do not sum to zero, the wage level drifted without bound or
+  collapsed, and the run did not converge. The solver now applies the
+  rescale of `caliendo_parro_2015` after its wage update, under every
+  `trade_balance_rule`. On baselines whose trade balances sum to zero,
+  results under `fixed`, `fixed_global_share` and `zero` change only within
+  solver tolerance (in a comparison run with solver `tolerance = 1e-10`,
+  wage changes moved by at most `5e-11` and welfare changes by at most
+  `4e-10`). `fixed_country_share` and
+  unbalanced-baseline runs change materially: they now converge, and
+  without a coalition they stay on the scale of `caliendo_parro_2015`. In
+  these runs the trade-balance rule cannot hold for the world as a whole, so
+  the two solvers stop at fixed points that differ slightly.
+- **No convergence when the trade-balance rule cannot hold for the world.**
+  *Behaviour change:* world exports equal world imports, so the solved
+  trade balances must sum to zero for the world. When they did not,
+  `update_equilibrium()` still reported `convergence = TRUE`, but labour
+  markets did not clear and the result depended on `vfactor`. This happens
+  with `trade_balance_rule = "fixed_country_share"` after a shock, and on a
+  baseline whose trade balances do not sum to zero under every rule except
+  `zero`. `update_equilibrium()` now checks the world sum of
+  `trade_balance_new` after the solve, with tolerance
+  `settings$tolerance_accounting` (default `1e-6`) times world value
+  added, and also refuses solutions with non-positive value added. The
+  default lets rounding residuals in data pass; the infeasible cases above
+  typically leave residuals of `1e-4` of world value added or more.
+  `tolerance_accounting` must be a single finite number `>= 0`. If the
+  check fails, `convergence` is `FALSE` and a warning of class
+  `kite_world_trade_balance` (fields `model` and `accounting`) explains
+  why. The new `results$info$accounting` holds the details for every run.
+  The check uses only the solver output, so it applies to every model in
+  the package. Results do not change: outputs of all runs are
+  bit-identical to before; only `info` changes.
+- **New logo.** The README and the package website use the current KITE
+  logo of [kite-model.org](https://kite-model.org); the website gets
+  favicons.
+
 # KITE 26.09
 
 Public release. Merges release/26.05 into main.

@@ -176,8 +176,8 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
     input[['trade_flow_new']] = input[['trade_share_new']]
     for (c in settings[['model_dimensions']]$destination) input[['trade_flow_new']][c,,] = input[['trade_share_new']][c,,] * t(input[['expenditure_new']])
 
-    # compute value added new ----
-    input[['value_added_new']] = array_sum(input[['factor_share']] * (apply(input[['trade_flow_new']] / input[['tariff_new']], c(1,3), sum)), 1)
+    # compute value added new, from output at producer prices ----
+    input[['value_added_new']] = array_sum(input[['factor_share']] * (apply(input[['trade_flow_new']] / (input[['tariff_new']] * input[['export_subsidy_new']]), c(1,3), sum)), 1)
     
     # update trade balance ----
     input[['trade_balance_new']] = update_trade_balance(input[['trade_balance']],
@@ -193,6 +193,11 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
 
     # compute adjusted wages ----
     input[['wage_change']] = pmax(input[['wage_change']] + settings[['vfactor']] * input[['excess']], .Machine$double.eps)
+
+    # normalize wage change: world value added stays at its baseline level, as
+    # in caliendo_parro_2015. The excess update alone keeps the wage level only
+    # while the world trade balance sums to zero.
+    input[['wage_change']] = input[['wage_change']] * sum(input[['value_added']]) / sum(input[['value_added_new']])
 
     # prepare next iteration ----
     criterion = check_convergence(input[['wage_change']], input[['wage_change0']], method = settings[['convergence_method']])
@@ -210,6 +215,13 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
   # return
   input[['criterion']] = criterion
   input[['iterations']] = h - 1
+  # income_new and income_old are zero work vectors (update_transfer_chkw_2022()
+  # fills local copies only) and price_index_change keeps its initial ones.
+  # Never return them: a requested zero income_new replaced the processed
+  # income. process_results() computes all three from the solution.
+  input[['income_new']] = NULL
+  input[['income_old']] = NULL
+  input[['price_index_change']] = NULL
   result = output_variables(input, c(c("wage_change",
                                        "input_cost_change",
                                        "price_change",
@@ -221,6 +233,8 @@ chowdhry_hinz_kamin_wanner_2022 = function (input, settings) {
                                        "iterations"),
                                      settings[["additional_output_variables"]]))
   attr(result, "inner_converged") = inner_converged
+  # for the world trade balance check in update_equilibrium()
+  attr(result, "value_added_new") = input[['value_added_new']]
   result
 
 }
@@ -360,10 +374,17 @@ update_expenditure_chkw_2022 = function (expenditure_new,
     exp0 = expenditure_new
     sum_exp0 = sum(exp0)
     for (c in model_dimensions[['destination']]) {
-      expenditure_new[,c] = input_share[c,,] %*% (expenditure_new %diag% (trade_share_new[c,,] / (tariff_new[c,,] * export_subsidy_new[c,,]))) + # input
+      # slices as matrices, so that one-sector models keep their dimensions
+      input_share_c = slice_matrix(input_share, c)
+      trade_share_out = slice_matrix(trade_share_new, c)
+      trade_share_in = slice_matrix(trade_share_new, c, 2)
+      tariff_out = slice_matrix(tariff_new, c)
+      tariff_in = slice_matrix(tariff_new, c, 2)
+      export_subsidy_out = slice_matrix(export_subsidy_new, c)
+      expenditure_new[,c] = input_share_c %*% (expenditure_new %diag% (trade_share_out / (tariff_out * export_subsidy_out))) + # input
         consumption_share[c,] * (
-          sum(((tariff_new[,c,] - 1) * trade_share_new[,c,] / tariff_new[,c,]) %*% expenditure_new[,c]) # new tariff revenue
-          + sum(expenditure_new %diag% ((export_subsidy_new[c,,] - 1) * trade_share_new[c,,] / (tariff_new[c,,] * export_subsidy_new[c,,]))) # new export subsidy costs
+          sum(((tariff_in - 1) * trade_share_in / tariff_in) %*% expenditure_new[,c]) # new tariff revenue
+          + sum(expenditure_new %diag% ((export_subsidy_out - 1) * trade_share_out / (tariff_out * export_subsidy_out))) # new export subsidy costs
           + wage_change[c] * value_added[c] # new value added
           - trade_balance[c] # trade balance
           + transfer[c]
@@ -456,16 +477,17 @@ update_transfer_chkw_2022 = function (transfer,
   }
 
   # compute old and new income, discounted by change in price index
+  # slices as matrices, so that one-sector models keep their dimensions
   for (c in coalition_countries) {
     income_new[c] = (
-      sum(((tariff_new[,c,] - 1) * trade_share_new[,c,] / tariff_new[,c,]) %*% expenditure_new[,c]) # new tariff revenue
-      + sum(expenditure_new %diag% ((export_subsidy_new[c,,] - 1) * trade_share_new[c,,] / (tariff_new[c,,] * export_subsidy_new[c,,]))) # new export subsidy costs
+      sum(((slice_matrix(tariff_new, c, 2) - 1) * slice_matrix(trade_share_new, c, 2) / slice_matrix(tariff_new, c, 2)) %*% expenditure_new[,c]) # new tariff revenue
+      + sum(expenditure_new %diag% ((slice_matrix(export_subsidy_new, c) - 1) * slice_matrix(trade_share_new, c) / (slice_matrix(tariff_new, c) * slice_matrix(export_subsidy_new, c)))) # new export subsidy costs
       + wage_change[c] * value_added[c] # new value added
       - trade_balance_new[c] # counterfactual trade balance
     )
     income_old[c] = (
-      sum(((tariff[,c,] - 1) * trade_share[,c,] / tariff[,c,]) %*% expenditure[,c]) # old tariff revenue
-      + sum(expenditure %diag% ((export_subsidy[c,,] - 1) * trade_share[c,,] / (tariff[c,,] * export_subsidy[c,,]))) # old export subsidy costs
+      sum(((slice_matrix(tariff, c, 2) - 1) * slice_matrix(trade_share, c, 2) / slice_matrix(tariff, c, 2)) %*% expenditure[,c]) # old tariff revenue
+      + sum(expenditure %diag% ((slice_matrix(export_subsidy, c) - 1) * slice_matrix(trade_share, c) / (slice_matrix(tariff, c) * slice_matrix(export_subsidy, c)))) # old export subsidy costs
       + value_added[c] # value added
       - trade_balance[c] # trade balance
     )

@@ -1,7 +1,7 @@
 # KITE <img src="man/figures/logo_kite.png" align="right" width="140" alt="KITE logo" />
 
-[![Version](https://img.shields.io/badge/version-26.09-blue)](NEWS.md)
-[![License: GPL-3](https://img.shields.io/badge/license-GPL--3-blue)](LICENSE)
+[![Version](https://img.shields.io/badge/version-26.10-blue)](https://github.com/julianhinz/KITE/blob/main/NEWS.md)
+[![License: GPL-3](https://img.shields.io/badge/license-GPL--3-blue)](https://github.com/julianhinz/KITE/blob/main/LICENSE)
 [![R >= 3.5.0](https://img.shields.io/badge/R-%3E%3D%203.5.0-276DC3)](https://www.r-project.org/)
 
 KITE is an open-source framework for quantitative trade-policy
@@ -9,7 +9,7 @@ counterfactuals, developed at the Kiel Institute for the World Economy.
 It implements general-equilibrium trade models in the New Quantitative
 Trade Model tradition and solves them in changes with exact hat algebra:
 you supply a baseline and a policy scenario (tariffs, non-tariff
-measures), and KITE returns the counterfactual changes in welfare,
+measures, carbon taxes), and KITE returns the counterfactual changes in welfare,
 production, and trade flows.
 
 Website: [kite-model.org](https://kite-model.org) ·
@@ -27,8 +27,9 @@ Requires R >= 3.5.0. Imports `data.table` and `cli`.
 ## Quick start
 
 The package ships a complete synthetic end-to-end example
-(3 countries, 2 sectors, a 20% bilateral tariff war), which runs
-both shipped models:
+(3 countries, 2 sectors, a 20% bilateral tariff war, and a carbon tax
+in a climate club with border carbon adjustment), which runs all
+shipped models:
 
 ```r
 library(KITE)
@@ -41,7 +42,8 @@ Expected output:
 
 ```
 CP2015 converged in 22 iterations (criterion = 9.757296e-05 ).
-CHKW2022 converged in 25 iterations (criterion = 8.269759e-05 ).
+CHKW2022 converged in 25 iterations (criterion = 8.113305e-05 ).
+MW2021 converged in 21 iterations (criterion = 9.971478e-05 ).
 ```
 
 The example builds initial conditions from scratch, defines a tariff
@@ -57,8 +59,9 @@ converts them with a warning.
 |---|---|---|
 | `caliendo_parro_2015` | Multi-sector Ricardian model with input–output linkages | Caliendo & Parro (2015), *Review of Economic Studies* |
 | `chowdhry_hinz_kamin_wanner_2022` | Sanctions-coalition extension | Chowdhry, Hinz, Kamin & Wanner (2024), *Economic Policy* — function name keeps the 2022 working-paper vintage |
+| `mahlkow_wanner_2021` | Carbon tax in a climate club with border carbon adjustment (CBAM) and export rebates | Mahlkow, Petersen & Wanner (2021), *Wirtschaftsdienst* 101(11), [doi:10.1007/s10273-021-3048-5](https://doi.org/10.1007/s10273-021-3048-5) |
 
-These are the 2 models currently shipped in this package; more are
+These are the 3 models currently shipped in this package; more are
 coming. The full KITE suite behind the [website](https://kite-model.org)
 comprises 13 models, available on request via
 [kite@kielinstitut.de](mailto:kite@kielinstitut.de).
@@ -103,7 +106,7 @@ entries ship in BibTeX at `system.file("KITE.bib", package = "KITE")`:
 
 ## License
 
-GPL-3 (see [LICENSE](LICENSE)). Alternative or commercial licensing
+GPL-3 (see [LICENSE](https://github.com/julianhinz/KITE/blob/main/LICENSE)). Alternative or commercial licensing
 terms are available on request via
 [kite@kielinstitut.de](mailto:kite@kielinstitut.de).
 

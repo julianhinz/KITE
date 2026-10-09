@@ -123,3 +123,62 @@ test_that("zero-baseline production hats are reported as one", {
   expect_identical(production_hat, 1)
   expect_identical(production_real_hat, 1)
 })
+
+run_chkw_for_results <- function(initial_conditions, model_scenario = list(), settings = list()) {
+  update_equilibrium(
+    model = chowdhry_hinz_kamin_wanner_2022,
+    initial_conditions = initial_conditions,
+    model_scenario = model_scenario,
+    settings = utils::modifyList(
+      list(verbose = 0L, tolerance = 1e-10, vfactor = 0.1,
+           max_iterations = 5000L),
+      settings
+    )
+  )
+}
+
+test_that("CHKW processed income includes the coalition transfer", {
+  members <- c("c1", "c2")
+  ic <- make_fixture(n_countries = 4L, n_sectors = 2L, seed = 106L,
+                     coalition_members = members)
+  tariff_new <- copy(ic$tariff)
+  tariff_new[origin != destination, value := 1.2]
+
+  result <- run_chkw_for_results(ic, list(tariff_new = tariff_new),
+                                 list(trade_balance_rule = "fixed"))
+  expect_true(result$info$convergence)
+  transfer <- named_values(result$output$transfer)
+  expect_true(all(abs(transfer[members]) > 1e-6))
+
+  processed <- process_results(result)
+  expected_income <-
+    named_values(ic$value_added) * named_values(result$output$wage_change) +
+    named_values(processed$output$tariff_revenue_new) +
+    named_values(processed$output$export_subsidy_costs_new) -
+    named_values(result$output$trade_balance_new) +
+    transfer
+  income_new <- named_values(processed$output$income_new)
+  expect_equal(income_new, expected_income[names(income_new)], tolerance = 1e-10)
+
+  # coalition members share one welfare change
+  welfare <- named_values(processed$output$welfare_change)
+  expect_equal(unname(welfare["c1"]), unname(welfare["c2"]), tolerance = 1e-8)
+})
+
+test_that("CHKW processed income is unchanged without a coalition", {
+  ic <- make_fixture(n_countries = 3L, n_sectors = 2L, seed = 107L)
+  tariff_new <- copy(ic$tariff)
+  tariff_new[origin != destination, value := 1.2]
+
+  result <- run_chkw_for_results(ic, list(tariff_new = tariff_new))
+  expect_true(all(result$output$transfer$value == 0))
+
+  processed <- process_results(result)
+  expected_income <-
+    named_values(ic$value_added) * named_values(result$output$wage_change) +
+    named_values(processed$output$tariff_revenue_new) +
+    named_values(processed$output$export_subsidy_costs_new) -
+    named_values(result$output$trade_balance_new)
+  income_new <- named_values(processed$output$income_new)
+  expect_identical(income_new, expected_income[names(income_new)])
+})

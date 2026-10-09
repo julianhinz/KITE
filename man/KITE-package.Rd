@@ -8,11 +8,14 @@
 A quantitative framework for international trade policy analysis.
 Multi-sector Ricardian models with intra- and international input-output
 linkages; supports simulation of trade policy changes via tariff and
-non-tariff measure scenarios.
+non-tariff measure scenarios, and of carbon taxes with border carbon
+adjustment.
 }
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://kite-model.org}
+  \item \url{https://kite-model.org/r/}
   \item \url{https://github.com/julianhinz/KITE}
   \item Report bugs at \url{https://github.com/julianhinz/KITE/issues}
 }

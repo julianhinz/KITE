@@ -29,4 +29,12 @@ Updates the trade balance based on different rules:
 (2) "fixed_country_share" - Constant relative to country's value added,
 (3) "fixed_global_share" - Constant share in global value added,
 (4) "zero" - Set all trade balances to zero.
+
+The solved trade balances must sum to zero for the world. Under
+`"fixed_country_share"` they do so only if value added changes by the same
+factor in every country, which in practice means no shock. Under `"fixed"`
+and `"fixed_global_share"` they do so only if the baseline trade balances
+sum to zero. [update_equilibrium()] reports `convergence = FALSE` with a
+warning of class `kite_world_trade_balance` for runs where the rule cannot
+hold for the world.
 }

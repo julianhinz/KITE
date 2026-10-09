@@ -152,3 +152,45 @@ test_that("CP2015 near autarky converges the active IO price fixed point", {
   )
   expect_lt(check_convergence(recomputed_input_cost, output$input_cost_change), 1e-8)
 })
+
+test_that("CHKW value added nets out export subsidies", {
+  ic <- make_fixture(n_countries = 3L, n_sectors = 2L, seed = 108L)
+  export_subsidy_new <- copy(ic$export_subsidy)
+  export_subsidy_new[origin != destination, value := 1.15]
+  value_added <- KITE:::cast_variable(ic$value_added)
+  trade_balance <- KITE:::cast_variable(ic$trade_balance)
+
+  for (rule in c("fixed", "fixed_global_share")) {
+    result <- update_equilibrium(
+      chowdhry_hinz_kamin_wanner_2022, ic,
+      list(export_subsidy_new = export_subsidy_new),
+      list(verbose = 0L, tolerance = 1e-10, vfactor = 0.1,
+           max_iterations = 5000L, trade_balance_rule = rule,
+           additional_output_variables = c("value_added_new", "trade_flow_new",
+                                           "tariff_new", "export_subsidy_new",
+                                           "factor_share"))
+    )
+    expect_true(result$info$convergence)
+    output <- lapply(result$output, KITE:::cast_variable)
+
+    # value added is the factor share of output at producer prices
+    output_value <- apply(output$trade_flow_new /
+                            (output$tariff_new * output$export_subsidy_new),
+                          c(1, 3), sum)
+    expected_value_added <- array_sum(output$factor_share * output_value, 1)
+    expect_equal(c(output$value_added_new), c(expected_value_added),
+                 tolerance = 1e-12)
+
+    # labour markets clear: value added equals wage change times baseline
+    expect_equal(c(output$value_added_new),
+                 c(output$wage_change * value_added[names(output$wage_change)]),
+                 tolerance = 1e-6)
+
+    if (rule == "fixed_global_share") {
+      expect_equal(c(output$trade_balance_new),
+                   c(trade_balance / sum(value_added) * sum(output$value_added_new)),
+                   tolerance = 1e-12)
+      expect_equal(sum(output$value_added_new), sum(value_added), tolerance = 1e-6)
+    }
+  }
+})

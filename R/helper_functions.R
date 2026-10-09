@@ -12,6 +12,29 @@
   z
 }
 
+#' Slice a three-dimensional array into a matrix
+#'
+#' @description
+#' `slice_matrix()` returns the slice of `x` at index `i` along dimension
+#' `along` as a matrix of the two other dimensions, in their original order
+#' and with their dimnames. Unlike `x[i, , ]`, it keeps dimensions of length
+#' one (e.g. a model with a single sector), so the result always works with
+#' `%*%` and `%diag%`.
+#'
+#' @return Matrix
+#'
+#' @param x Three-dimensional array.
+#' @param i Index (name or position) along dimension `along`.
+#' @param along Dimension to slice: 1, 2 or 3.
+#'
+slice_matrix = function (x, i, along = 1L) {
+  y = switch(along,
+             x[i, , , drop = FALSE],
+             x[, i, , drop = FALSE],
+             x[, , i, drop = FALSE])
+  array(y, dim = dim(x)[-along], dimnames = dimnames(x)[-along])
+}
+
 #' Cast variable from data.tables to vectors, matrices and arrays
 #'
 #' @description
@@ -109,6 +132,8 @@ generate_input = function (initial_conditions, model_scenario, settings) {
 #' @param x List of data.tables of initial conditions
 #'
 get_model_dimensions <- function (x) {
+  # plain vectors (e.g. scalar policy settings) carry no dimensions
+  x = x[!vapply(x, is.atomic, logical(1))]
   names(x) = NULL
   x = lapply(x, c)
   x = unlist(x, recursive = F)
@@ -240,7 +265,9 @@ melt_variable = function (x) {
     return(lapply(x, melt_variable))
   }
   if (is.array(x)) {
-    if (length(dim(x)) == 2 & dim(x)[2] == 1) { # fix problem with one-dimensional arrays
+    # fix problem with one-dimensional arrays; a named dimension of length
+    # one (e.g. the only sector of a one-sector model) is kept
+    if (length(dim(x)) == 2 && dim(x)[2] == 1 && is.null(dimnames(x)[[2]])) {
         x = array(x, dim = dim(x)[1], dimnames = dimnames(x)[1])
     }
     return (setDT(as.data.frame.table(x, responseName = "value", stringsAsFactors = F)))

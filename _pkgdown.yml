@@ -1,5 +1,51 @@
+url: https://kite-model.org/r/
+
 template:
   params:
     bootswatch: flatly
 
 destination: docs
+
+reference:
+- title: Solve and process
+  contents:
+  - update_equilibrium
+  - process_results
+- title: Models
+  contents:
+  - caliendo_parro_2015
+  - chowdhry_hinz_kamin_wanner_2022
+  - mahlkow_wanner_2021
+- title: Model components
+  desc: Equilibrium updates that the model functions call.
+  contents:
+  - ends_with("_cp_2015")
+  - ends_with("_chkw_2022")
+  - ends_with("_mw_2021")
+  - update_trade_balance
+- title: Array and convergence helpers
+  contents:
+  - array_sum
+  - array_sweep
+  - check_convergence
+  - format_time_diff
+  - slice_matrix
+  - "`%diag%`"
+- title: Internal helpers
+  contents:
+  - cast_variable
+  - melt_variable
+  - initialize_variable
+  - vector_to_array
+  - dt_array_dim
+  - dt_array_dimnames
+  - generate_input
+  - get_model_dimensions
+  - nest_elasticity_variables
+  - output_variables
+  - predict_convergence_eta
+  - check_world_trade_balance
+- title: Package
+  contents:
+  - KITE
+  - KITE-package

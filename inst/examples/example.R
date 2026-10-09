@@ -1,6 +1,6 @@
 # KITE -- end-to-end tutorial
 #
-# Demonstrates running both shipped models on a synthetic 3-country,
+# Demonstrates running all shipped models on a synthetic 3-country,
 # 2-sector economy. For calibrated initial conditions matching real
 # trade and IO data, contact KITE@kielinstitut.de.
 
@@ -119,14 +119,42 @@ run_kite_example <- function(seed = 1L) {
   )
   chkw_summary <- process_results(result_chkw)
 
-  invisible(list(cp = result_cp, chkw = result_chkw,
-                 cp_summary = cp_summary, chkw_summary = chkw_summary))
+  # ---- 5. Run mahlkow_wanner_2021: carbon tax in a climate club -------------
+  # c1 and c3 tax the carbon content of all goods used at home, levy a
+  # border carbon tariff on imports from c2 and rebate it on exports to c2.
+  # The tax is per unit of carbon, so the model needs initial price levels.
+
+  ic_carbon <- ic
+  ic_carbon$price <- dt_2d(runif(n_c * n_s, 0.8, 1.2),
+                           list(country = countries, sector = sectors))
+  ic_carbon$carbon_intensity <- dt_1d(c(0.4, 0.1), "sector", sectors)
+
+  result_mw <- update_equilibrium(
+    model = mahlkow_wanner_2021,
+    initial_conditions = ic_carbon,
+    model_scenario = list(carbon_tax = 0.5,
+                          countries_climate_club = c("c1", "c3"),
+                          scenario_carbon_tariff = TRUE,
+                          scenario_export_rebate = TRUE),
+    settings = list(verbose = 0L, tolerance = 1e-4,
+                    vfactor = 0.1, max_iterations = 200)
+  )
+  mw_summary <- process_results(result_mw)
+
+  invisible(list(cp = result_cp, chkw = result_chkw, mw = result_mw,
+                 cp_summary = cp_summary, chkw_summary = chkw_summary,
+                 mw_summary = mw_summary))
 }
 
 if (interactive() || nzchar(Sys.getenv("KITE_RUN_EXAMPLE", unset = ""))) {
   res <- run_kite_example()
-  cat("\nCP2015 converged in", res$cp$info$iterations,
-      "iterations (criterion =", res$cp$info$criterion, ").\n")
-  cat("CHKW2022 converged in", res$chkw$info$iterations,
-      "iterations (criterion =", res$chkw$info$criterion, ").\n")
+  cat("\n")
+  for (run in list(list("CP2015", res$cp), list("CHKW2022", res$chkw),
+                   list("MW2021", res$mw))) {
+    info <- run[[2]]$info
+    status <- if (isTRUE(info$convergence)) "converged in" else
+      "did NOT converge in"
+    cat(run[[1]], status, info$iterations,
+        "iterations (criterion =", info$criterion, ").\n")
+  }
 }
