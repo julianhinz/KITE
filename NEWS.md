@@ -115,6 +115,9 @@ balances sum to zero they change only within solver tolerance.
   The check uses only the solver output, so it applies to every model in
   the package. Results do not change: outputs of all runs are
   bit-identical to before; only `info` changes.
+- **New logo.** The README and the package website use the current KITE
+  logo of [kite-model.org](https://kite-model.org); the website gets
+  favicons.
 
 # KITE 26.09
 
