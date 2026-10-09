@@ -14,6 +14,8 @@ adjustment.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://kite-model.org}
+  \item \url{https://kite-model.org/r/}
   \item \url{https://github.com/julianhinz/KITE}
   \item Report bugs at \url{https://github.com/julianhinz/KITE/issues}
 }

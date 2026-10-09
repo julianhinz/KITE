@@ -1,3 +1,5 @@
+url: https://kite-model.org/r/
+
 template:
   params:
     bootswatch: flatly
@@ -42,6 +44,7 @@ reference:
   - nest_elasticity_variables
   - output_variables
   - predict_convergence_eta
+  - check_world_trade_balance
 - title: Package
   contents:
   - KITE

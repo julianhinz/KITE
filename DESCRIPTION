@@ -1,7 +1,8 @@
 Package: KITE
 Title: KITE Model Suite
 Version: 26.10
-Date: 2026-10-05
+ReleaseName: Brisk Fehmarn
+Date: 2026-10-09
 Authors@R: c(
     person("Julian", "Hinz", role = c("cre","aut"),
            email = "julian.hinz@kielinstitut.de"),
@@ -22,7 +23,7 @@ Imports:
     cli
 Suggests:
     testthat (>= 3.0.0)
-URL: https://github.com/julianhinz/KITE
+URL: https://kite-model.org, https://kite-model.org/r/, https://github.com/julianhinz/KITE
 BugReports: https://github.com/julianhinz/KITE/issues
 Encoding: UTF-8
 Config/roxygen2/version: 8.0.0
