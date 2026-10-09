@@ -6,7 +6,7 @@
     <polygon points="200,40 340,200 200,240" fill="#0F0F0F"></polygon>
     <polygon points="200,40 60,200 200,240" fill="none"></polygon>
     <polygon points="200,240 340,200 200,440" fill="none"></polygon>
-    <polygon points="200,240 60,200 200,440" fill="#E8FF3A"></polygon>
+    <polygon points="200,240 60,200 200,440" fill="#d96a4a"></polygon>
 
     <polygon points="200,40 340,200 200,440 60,200" fill="none" stroke="#0F0F0F" stroke-width="6" stroke-linejoin="round"></polygon>
 
