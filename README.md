@@ -1,7 +1,7 @@
 # KITE <img src="man/figures/logo_kite.png" align="right" width="140" alt="KITE logo" />
 
-[![Version](https://img.shields.io/badge/version-26.10-blue)](NEWS.md)
-[![License: GPL-3](https://img.shields.io/badge/license-GPL--3-blue)](LICENSE)
+[![Version](https://img.shields.io/badge/version-26.10-blue)](https://github.com/julianhinz/KITE/blob/main/NEWS.md)
+[![License: GPL-3](https://img.shields.io/badge/license-GPL--3-blue)](https://github.com/julianhinz/KITE/blob/main/LICENSE)
 [![R >= 3.5.0](https://img.shields.io/badge/R-%3E%3D%203.5.0-276DC3)](https://www.r-project.org/)
 
 KITE is an open-source framework for quantitative trade-policy
@@ -106,7 +106,7 @@ entries ship in BibTeX at `system.file("KITE.bib", package = "KITE")`:
 
 ## License
 
-GPL-3 (see [LICENSE](LICENSE)). Alternative or commercial licensing
+GPL-3 (see [LICENSE](https://github.com/julianhinz/KITE/blob/main/LICENSE)). Alternative or commercial licensing
 terms are available on request via
 [kite@kielinstitut.de](mailto:kite@kielinstitut.de).
 
