@@ -148,10 +148,13 @@ run_kite_example <- function(seed = 1L) {
 
 if (interactive() || nzchar(Sys.getenv("KITE_RUN_EXAMPLE", unset = ""))) {
   res <- run_kite_example()
-  cat("\nCP2015 converged in", res$cp$info$iterations,
-      "iterations (criterion =", res$cp$info$criterion, ").\n")
-  cat("CHKW2022 converged in", res$chkw$info$iterations,
-      "iterations (criterion =", res$chkw$info$criterion, ").\n")
-  cat("MW2021 converged in", res$mw$info$iterations,
-      "iterations (criterion =", res$mw$info$criterion, ").\n")
+  cat("\n")
+  for (run in list(list("CP2015", res$cp), list("CHKW2022", res$chkw),
+                   list("MW2021", res$mw))) {
+    info <- run[[2]]$info
+    status <- if (isTRUE(info$convergence)) "converged in" else
+      "did NOT converge in"
+    cat(run[[1]], status, info$iterations,
+        "iterations (criterion =", info$criterion, ").\n")
+  }
 }
