@@ -19,6 +19,6 @@ bibentry(
               person("Hendrik", "Mahlkow"),
               person("Joschka", "Wanner")),
   year    = 2026,
-  note    = "R package version 26.10",
+  note    = "R package version 26.10 -- Brisk Fehmarn",
   url     = "https://github.com/julianhinz/KITE"
 )

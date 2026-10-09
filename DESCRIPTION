@@ -1,7 +1,8 @@
 Package: KITE
 Title: KITE Model Suite
 Version: 26.10
-Date: 2026-10-05
+ReleaseName: Brisk Fehmarn
+Date: 2026-10-09
 Authors@R: c(
     person("Julian", "Hinz", role = c("cre","aut"),
            email = "julian.hinz@kielinstitut.de"),

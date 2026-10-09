@@ -1,4 +1,4 @@
-# KITE 26.10
+# KITE 26.10 — Brisk Fehmarn
 
 A new model, `mahlkow_wanner_2021`, and bug fixes for `caliendo_parro_2015`
 and `chowdhry_hinz_kamin_wanner_2022`.
