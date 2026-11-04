@@ -59,7 +59,7 @@ converts them with a warning.
 |---|---|---|
 | `caliendo_parro_2015` | Multi-sector Ricardian model with input–output linkages | Caliendo & Parro (2015), *Review of Economic Studies* |
 | `chowdhry_hinz_kamin_wanner_2022` | Sanctions-coalition extension | Chowdhry, Hinz, Kamin & Wanner (2024), *Economic Policy* — function name keeps the 2022 working-paper vintage |
-| `mahlkow_wanner_2021` | Carbon tax in a climate club with border carbon adjustment (CBAM) and export rebates | Mahlkow, Petersen & Wanner (2021), *Wirtschaftsdienst* 101(11), [doi:10.1007/s10273-021-3048-5](https://doi.org/10.1007/s10273-021-3048-5) |
+| `mahlkow_wanner_2021` | Carbon tax in a climate club with border carbon adjustment (CBAM) and export rebates | Mahlkow & Wanner (2023), [*The Carbon Footprint of Global Trade Imbalances*](https://www.cesifo.org/en/publications/2023/working-paper/carbon-footprint-global-trade-imbalances), CESifo Working Paper 10729 |
 
 These are the 3 models currently shipped in this package; more are
 coming. The full KITE suite behind the [website](https://kite-model.org)

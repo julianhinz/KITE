@@ -102,7 +102,7 @@ The settings are those of [caliendo_parro_2015()]: `vfactor`,
 [caliendo_parro_2015()], world value added is the numeraire.
 }
 \references{
-Mahlkow, H., Petersen, T. and Wanner, J. (2021). Folgen eines höheren
-CO2-Preises in der EU – wer gewinnt, wer verliert? Wirtschaftsdienst,
-101(11), 870–877. \doi{10.1007/s10273-021-3048-5}
+Mahlkow, H. and Wanner, J. (2023). The Carbon Footprint of Global Trade
+Imbalances. CESifo Working Paper 10729.
+\url{https://www.cesifo.org/en/publications/2023/working-paper/carbon-footprint-global-trade-imbalances}
 }
